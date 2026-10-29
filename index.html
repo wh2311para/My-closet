@@ -1,0 +1,1961 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>我的衣橱 · My Closet</title>
+<meta name="description" content="Your clothes, photographed and organized, with mix and match. Works offline; everything stays on your phone.">
+<meta name="theme-color" content="#eceef1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#14161c" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="我的衣橱">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>
+@font-face{font-family:"Bricolage Grotesque";font-style:normal;font-weight:500;font-display:swap;src:url(fonts/bricolage-grotesque-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Bricolage Grotesque";font-style:normal;font-weight:700;font-display:swap;src:url(fonts/bricolage-grotesque-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:"Bricolage Grotesque";font-style:normal;font-weight:800;font-display:swap;src:url(fonts/bricolage-grotesque-latin-800-normal.woff2) format("woff2")}
+@font-face{font-family:"Figtree";font-style:normal;font-weight:400;font-display:swap;src:url(fonts/figtree-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Figtree";font-style:normal;font-weight:500;font-display:swap;src:url(fonts/figtree-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Figtree";font-style:normal;font-weight:600;font-display:swap;src:url(fonts/figtree-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"IBM Plex Mono";font-style:normal;font-weight:400;font-display:swap;src:url(fonts/ibm-plex-mono-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"IBM Plex Mono";font-style:normal;font-weight:500;font-display:swap;src:url(fonts/ibm-plex-mono-latin-500-normal.woff2) format("woff2")}
+/* Layout: a closet rail. Items are swing tags on a grid; Mix & Match stacks
+   garment slots head-to-toe like a dressing-room mirror. */
+:root{
+  --bg:#eceef1; --surface:#ffffff; --sunk:#e2e5ea; --line:#d3d7de;
+  --fg:#1d2230; --muted:#5f6677; --accent:#6a2a5b; --accent-ink:#ffffff; --accent-soft:#f1e3ee;
+  --ok:#2f6b4f; --danger:#a3322e;
+  --f-display:"Bricolage Grotesque", "Avenir Next", "Noto Sans SC", "PingFang SC", system-ui, sans-serif;
+  --f-body:"Figtree", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-tag:"IBM Plex Mono", "Noto Sans SC", ui-monospace, Menlo, monospace;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#14161c; --surface:#1d2029; --sunk:#252935; --line:#323746;
+  --fg:#eceef3; --muted:#a2a8b8; --accent:#d58fc4; --accent-ink:#1a0f17; --accent-soft:#3a2234;
+  --ok:#7cc4a0; --danger:#ef8a85; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#14161c; --surface:#1d2029; --sunk:#252935; --line:#323746;
+  --fg:#eceef3; --muted:#a2a8b8; --accent:#d58fc4; --accent-ink:#1a0f17; --accent-soft:#3a2234;
+  --ok:#7cc4a0; --danger:#ef8a85; color-scheme:dark }
+
+*{box-sizing:border-box}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html,body{margin:0}
+body{-webkit-tap-highlight-color:transparent}
+img{max-width:100%}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 var(--f-body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
+.wrap{max-width:1100px;margin:0 auto}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* header */
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px;padding-block:28px 18px}
+h1{font:800 clamp(30px,6vw,46px)/1 var(--f-display);letter-spacing:-.02em;margin:0;text-wrap:balance}
+.sub{font:500 12px/1.4 var(--f-tag);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:8px}
+.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:9px 16px;font-weight:600;font-size:14px}
+.btn:hover{border-color:var(--fg)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent}
+.btn.danger{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 40%,transparent);background:transparent}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+nav.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:20px;overflow-x:auto}
+nav.tabs button{background:none;border:0;padding:10px 14px;font:600 15px var(--f-body);color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+nav.tabs button[aria-selected="true"]{color:var(--fg);border-color:var(--accent)}
+nav.tabs .n{font:500 11px var(--f-tag);color:var(--muted);margin-left:4px}
+
+.banner{background:var(--accent-soft);border-radius:10px;padding:10px 14px;font-size:14px;margin-bottom:16px}
+.banner.demo{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
+.banner.demo span{flex:1 1 260px;min-width:0}
+
+/* filters */
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:16px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:500}
+.chip[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.chip .n{font:500 11px var(--f-tag);opacity:.7;margin-left:3px}
+.search{flex:1 1 180px;min-width:0;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 14px}
+select.sel{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 12px}
+
+/* closet grid: swing tags */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}
+@media (max-width:420px){.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;text-align:left;padding:0;display:flex;flex-direction:column}
+.card:hover{border-color:var(--fg)}
+.card .ph{aspect-ratio:3/4;max-width:100%;background:var(--sunk);position:relative}
+.card .ph img{width:100%;height:100%;object-fit:cover;display:block}
+.card .ph img.back{position:absolute;inset:0;opacity:0;transition:opacity .25s}
+.card:hover .ph img.back,.card:focus-visible .ph img.back{opacity:1}
+.badge.backtag{left:auto;right:8px;top:auto;bottom:8px}
+.check{position:absolute;top:8px;right:8px;width:26px;height:26px;border-radius:50%;border:2px solid #fff;background:rgba(20,22,30,.35);display:grid;place-items:center;color:#fff;font-size:15px;font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.card[aria-pressed="true"],.ocard[aria-pressed="true"]{outline:3px solid var(--accent);outline-offset:-1px}
+.card[aria-pressed="true"] .check,.ocard[aria-pressed="true"] .check{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+button.ocard{text-align:left;position:relative;font:inherit;color:inherit;cursor:pointer}
+.selbar{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -4px 16px rgba(0,0,0,.08);
+  padding:12px max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.selbar .in{max-width:1100px;margin:0 auto;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.selbar b{font-weight:600}
+body.selecting{padding-bottom:96px}
+.gallery{display:flex;gap:6px;flex-wrap:wrap}
+.gallery button{border:2px solid transparent;border-radius:8px;padding:0;background:none;width:46px;position:relative}
+.gallery button[aria-pressed="true"]{border-color:var(--accent)}
+.gallery img{width:42px;height:56px;object-fit:cover;border-radius:6px;display:block;background:var(--sunk)}
+.gallery small{display:block;font:500 9.5px var(--f-tag);color:var(--muted);text-align:center;letter-spacing:.04em}
+.pvwrap{display:grid;gap:8px;align-content:start}
+.flip{position:absolute;bottom:6px;left:6px;font:500 10px var(--f-tag);background:var(--surface);border-radius:999px;padding:1px 7px;letter-spacing:.05em}
+.slot .frame .imgbtn{border:0;padding:0;background:none;position:relative;flex:none;border-radius:10px}
+.card .meta{padding:10px 12px 12px;display:grid;gap:4px;min-width:0}
+.card .name{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tag{font:500 10.5px/1.3 var(--f-tag);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.dots{display:flex;gap:3px}
+.dot{width:10px;height:10px;border-radius:50%;border:1px solid color-mix(in srgb,var(--fg) 25%,transparent)}
+.badge{position:absolute;top:8px;left:8px;background:var(--surface);border-radius:999px;padding:2px 8px;font:500 10.5px var(--f-tag);letter-spacing:.05em}
+.badge.new{background:var(--accent);color:var(--accent-ink)}
+
+/* empty */
+.empty{border:1.5px dashed var(--line);border-radius:var(--r);padding:40px 20px;text-align:center;display:grid;gap:12px;justify-items:center;background:var(--surface)}
+.empty h2{font:700 22px var(--f-display);margin:0}
+.empty p{color:var(--muted);margin:0;max-width:46ch}
+.hanger{width:84px;height:auto;color:var(--muted)}
+
+/* mix & match */
+.mix{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:24px;align-items:start}
+@media (max-width:760px){.mix{grid-template-columns:minmax(0,1fr)}}
+.mirror{display:grid;gap:10px}
+.slot{display:grid;grid-template-columns:40px minmax(0,1fr) 40px;gap:8px;align-items:center}
+.slot .frame{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);display:flex;gap:12px;align-items:center;padding:8px;min-height:96px;position:relative}
+.slot .frame img{width:96px;height:120px;object-fit:cover;border-radius:10px;background:var(--sunk);flex:none}
+.slot .frame .blank{width:96px;height:120px;border-radius:10px;background:var(--sunk);display:grid;place-items:center;color:var(--muted);font:500 10.5px var(--f-tag);letter-spacing:.06em;flex:none;text-align:center}
+.slot .info{min-width:0;display:grid;gap:3px}
+.slot .info .name{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.arrow{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--surface);font-size:18px;line-height:1}
+.arrow:hover{border-color:var(--fg)}
+.lock{position:absolute;top:8px;right:8px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:3px 10px;font:500 11px var(--f-tag);letter-spacing:.04em}
+.lock[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.side{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;gap:12px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px)}
+.side h3{margin:0;font:700 18px var(--f-display)}
+.side label{font:500 11px var(--f-tag);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:grid;gap:6px}
+.side input,.side select{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:8px 10px;text-transform:none;letter-spacing:0;font:15px var(--f-body);color:var(--fg)}
+.row{display:flex;flex-wrap:wrap;gap:8px}
+.note{font-size:13px;color:var(--muted);margin:0}
+
+/* outfits */
+.ogrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.ocard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px;display:grid;gap:10px}
+.collage{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.collage img,.collage span{width:100%;aspect-ratio:3/4;max-width:100%;object-fit:cover;border-radius:8px;background:var(--sunk);display:block}
+.ocard h4{margin:0;font:700 17px var(--f-display)}
+
+/* sheet (dialog) */
+.scrim{position:fixed;inset:0;background:rgba(10,12,18,.5);z-index:50;display:flex;align-items:flex-end;justify-content:center}
+@media (min-width:700px){.scrim{align-items:center}}
+.sheet{background:var(--surface);width:min(640px,100%);max-height:92vh;overflow:auto;border-radius:18px 18px 0 0;
+  padding:20px max(20px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px));display:grid;gap:16px}
+@media (min-width:700px){.sheet{border-radius:18px}}
+.sheet h2{margin:0;font:700 22px var(--f-display)}
+.sheet .head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.x,.xbtn{border:0;background:var(--sunk);border-radius:50%;width:34px;height:34px;font-size:18px}
+.edwrap{position:relative;max-width:100%;justify-self:center;border-radius:12px;overflow:hidden;background:var(--sunk);line-height:0}
+.edwrap canvas{display:block;max-width:100%;max-height:58vh;width:auto;height:auto}
+.edwrap #edMask{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair;max-height:none}
+.brush{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.brush input{width:110px;accent-color:var(--accent)}
+.field{display:grid;gap:6px}
+.field>span{font:500 11px var(--f-tag);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.field input,.field textarea{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:9px 12px;width:100%}
+.swatches{display:flex;flex-wrap:wrap;gap:8px}
+.sw{width:30px;height:30px;border-radius:50%;border:1px solid color-mix(in srgb,var(--fg) 25%,transparent);padding:0;position:relative}
+.sw[aria-pressed="true"]{outline:2px solid var(--fg);outline-offset:2px}
+.edit-item{display:grid;grid-template-columns:120px minmax(0,1fr);gap:16px}
+@media (max-width:480px){.edit-item{grid-template-columns:minmax(0,1fr)}.edit-item .pv{max-width:180px}}
+.pv{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:12px;background:var(--sunk)}
+.queue-nav{display:flex;justify-content:space-between;align-items:center;gap:10px;font:500 12px var(--f-tag);color:var(--muted)}
+.stats{display:flex;gap:18px;font:500 12px var(--f-tag);color:var(--muted);letter-spacing:.04em}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:600;z-index:60;font-size:14px}
+/* today + color match */
+.today{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;gap:12px;margin-bottom:18px}
+.today h3{margin:0;font:700 20px var(--f-display)}
+.today .opts{display:flex;flex-wrap:wrap;gap:14px 24px}
+.today .opts>div{display:grid;gap:6px}
+.nudge{display:flex;gap:12px;align-items:center;background:var(--accent-soft);border-radius:12px;padding:8px 12px 8px 8px;text-align:left;border:0;width:100%}
+.nudge img{width:44px;height:56px;object-fit:cover;border-radius:8px;flex:none;background:var(--sunk)}
+.nudge span{min-width:0;font-size:14px}
+.answer{border-top:1px solid var(--line);padding-top:12px;display:grid;gap:6px}
+.answer h4{margin:0;font:700 17px var(--f-display)}
+.answer p{margin:0;max-width:65ch}
+.answer .tip{color:var(--muted);font-size:14px}
+.match{border-radius:12px;padding:12px;display:grid;gap:6px;background:var(--sunk)}
+.pill{justify-self:start;border-radius:999px;padding:2px 10px;font:500 11px var(--f-tag);letter-spacing:.06em;text-transform:uppercase;border:1px solid currentColor}
+.pill.great{color:var(--ok)} .pill.good{color:var(--fg)} .pill.bold{color:#b7791f} .pill.clash{color:var(--danger)} .pill.none{color:var(--muted)}
+:root[data-theme="dark"] .pill.bold{color:#e8b45a}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .pill.bold{color:#e8b45a}}
+.palette{display:flex;height:10px;border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+.palette i{flex:1}
+.match p{margin:0;font-size:14px}
+.toggle{display:flex!important;grid-auto-flow:column;align-items:center;gap:8px!important;text-transform:none!important;letter-spacing:0!important;font:14px var(--f-body)!important;color:var(--fg)!important}
+.toggle input{width:18px;height:18px;accent-color:var(--accent)}
+.goes{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.goes button{border:0;padding:0;background:none;flex:none;width:64px;text-align:left}
+.goes img{width:64px;height:80px;object-fit:cover;border-radius:8px;display:block;background:var(--sunk)}
+.goes small{display:block;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.progress{height:6px;background:var(--sunk);border-radius:99px;overflow:hidden}
+.progress i{display:block;height:100%;background:var(--accent);width:0;transition:width .2s}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.lang{border:1px solid var(--line);background:transparent;border-radius:999px;padding:9px 14px;font-weight:600;font-size:14px}
+.lang:hover{border-color:var(--fg)}
+.detect{display:flex;align-items:center;gap:8px;font-size:13px;border-radius:10px;padding:8px 12px;background:var(--accent-soft)}
+.detect.fail{background:var(--sunk);color:var(--muted)}
+.spin{width:14px;height:14px;border-radius:50%;border:2px solid var(--accent);border-right-color:transparent;animation:spin .8s linear infinite;flex:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation:none}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1 id="h1">My Closet</h1>
+      <div class="sub" id="sub"></div>
+    </div>
+    <div class="row">
+      <button class="lang" type="button" id="backupBtn"></button>
+      <button class="lang" type="button" id="langBtn" lang="zh">中文</button>
+      <button class="btn primary" id="addBtn" type="button"></button>
+      <input type="file" id="fileIn" accept="image/*" multiple hidden>
+    </div>
+  </header>
+
+  <div class="banner" id="localBanner" hidden></div>
+  <div class="banner demo" id="demoBanner" hidden><span id="demoText"></span><button class="btn" type="button" id="removeDemo"></button></div>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" id="tab-closet" aria-selected="true" data-tab="closet"><span class="tl"></span> <span class="n" id="nItems">0</span></button>
+    <button role="tab" id="tab-mix" aria-selected="false" data-tab="mix"><span class="tl"></span></button>
+    <button role="tab" id="tab-outfits" aria-selected="false" data-tab="outfits"><span class="tl"></span> <span class="n" id="nOutfits">0</span></button>
+  </nav>
+
+  <section id="view-closet"></section>
+  <section id="view-mix" hidden></section>
+  <section id="view-outfits" hidden></section>
+</div>
+
+<div id="sheetHost"></div>
+<div class="selbar" id="selBar" hidden><div class="in"><b id="selCount"></b><div class="row"><button class="btn ghost" type="button" id="selAll"></button><button class="btn ghost" type="button" id="selDone"></button><button class="btn danger" type="button" id="selDelete"></button></div></div></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* ================= language ================= */
+let LANG = "en";
+try{ LANG = localStorage.getItem("closet-lang") || ((navigator.language||"").toLowerCase().startsWith("zh") ? "zh" : "en"); }catch(e){}
+const STR = {
+en:{
+  title:"My Closet", add:"＋ Add clothes", loading:"Loading your closet…", emptySub:"Your closet is empty",
+  sub:(n,o,u)=>`${n} pieces · ${o} outfits · ${u} not worn yet`,
+  localBanner:"This browser isn't letting the app save (private browsing?), so anything you add disappears when you close it. Open it in a normal window to keep your closet.",
+  demo:n=>`${n} pieces here are demo drawings so you can try the app. Remove them when you're ready to add your own clothes.`,
+  removeDemo:"Remove demo pieces", tapAgainRemove:"Tap again to remove", removing:"Removing…", demoRemoved:"Demo pieces removed", demoRemoveFail:"Some demo pieces couldn't be removed. Try again.",
+  tabCloset:"Closet", tabMix:"Mix & match", tabOutfits:"Saved outfits",
+  emptyTitle:"Your closet is empty",
+  emptyCloset:"Take a photo of each piece, laid flat or on a hanger, then add them here. The app cuts it out and puts it on white for you. Everything stays on this phone.",
+  emptyMix:"Once you've added a few tops, bottoms and shoes, you can flip through combinations here and save the ones you like.",
+  addFirst:"＋ Add your first photos", all:"All", search:"Search names and notes", anyColor:"Any color",
+  sortNew:"Newest first", sortLeast:"Least worn", sortMost:"Most worn", sortName:"Name A–Z", noMatch:"Nothing matches these filters.",
+  badgeNew:"New", badgeUnworn:"Not worn yet", worn:n=>`worn ${n}×`,
+  slotLabels:{outerwear:"Outerwear",top:"Top, dress or set",bottom:"Bottom",shoes:"Shoes",bag:"Bag",accessory:"Accessory"},
+  optional:"optional", noneAdded:"NONE<br>ADDED", skip:"SKIP", nothingYet:"Nothing in this category yet", notWearing:"Not wearing one",
+  lock:"Lock", locked:"Locked", prev:"Previous", next:"Next",
+  thisLook:"This look", season:"Season", anySeason:"Any season", onlyMatch:"Only colors that match", shuffle:"⟳ Shuffle unlocked",
+  lockNote:"Lock the pieces you've decided on, then shuffle the rest.", outfitName:"Outfit name", outfitPh:"e.g. Office Friday",
+  saveOutfit:"Save outfit", wearToday:"Wear today",
+  wearNote:"“Wear today” saves it and adds a wear to each piece, so you can spot what you never reach for.",
+  defaultOutfit:n=>`Outfit ${n}`, alreadySaved:"You already saved this outfit", loggedWorn:"Logged as worn today", outfitSaved:"Outfit saved",
+  saveFail:"Couldn't save. Check your connection and try again.", alreadyToday:"Already logged for today",
+  noOutfitsTitle:"No saved outfits yet", noOutfits:"Put a look together in Mix & match and save it. It will show up here.", goMix:"Go to Mix & match",
+  pieces:n=>`${n} pieces`, last:d=>`last ${d}`, editMix:"Edit in mix", del:"Delete", tapAgain:"Tap again", outfitDeleted:"Outfit deleted",
+  todayTitle:"What should I wear today?", nudgeLabel:"Today's nudge:",
+  nudgeSince:(n,d)=>`you haven't worn your ${n} since ${d}. Tap to build an outfit around it.`,
+  nudgeNever:n=>`your ${n} hasn't been worn yet. Tap to build an outfit around it.`,
+  weather:"Weather", occasion:"Occasion", thinking:"Thinking…", suggestClaude:"✦ Suggest an outfit with Claude", suggest:"✦ Suggest an outfit", tip:"Tip:",
+  needMore:"Add a few more pieces first", needMoreWhy:"I need at least some tops or dresses and a pair of shoes to suggest a full outfit.",
+  quickTitle:(w,o)=>`${w} day, ${o.toLowerCase()}`,
+  busyClaude:"Claude is busy right now, so this is a quick pick based on color matching.",
+  offClaude:"Claude suggestions are switched off for this page, so this is a quick pick based on color matching.",
+  failClaude:"Claude couldn't answer this time, so this is a quick pick based on color matching.",
+  tagTitle:"Tag your clothes", photoOf:(i,n)=>`PHOTO ${i} OF ${n}`, carry:"Tags carry over from the last photo",
+  back:"Back", skipPhoto:"Skip photo", nextPhoto:"Next photo", addN:n=>`Add ${n} to closet`,
+  pickCat:"Pick a category so this piece shows up in Mix & match.",
+  adding:"Adding to your closet", ofN:(d,n)=>`${d} of ${n}`,
+  addedN:n=>`Added ${n} to your closet`, addedSome:(ok,f)=>`Added ${ok}. ${f} photo${f>1?"s":""} couldn't upload. Try them again.`,
+  detecting:"Claude is identifying this piece…", detected:"Filled in by Claude. Check it and adjust anything that's off.",
+  detectFail:"Couldn't identify this one automatically. Fill in the tags yourself.",
+  detectOff:"Automatic recognition is switched off for this page. Fill in the tags yourself.",
+  reidentify:"✦ Identify again",
+  cleaning:"Cleaning up the photo…", cleanFirst:"Getting the photo tool ready. The first time takes a little while (about 55 MB to download once).",
+  cleaned:"Background replaced with white, and light and colors evened out.", cleanedNoCut:"Couldn't find the garment's outline, so only light and colors were adjusted.",
+  cleanFail:"Photo clean-up isn't available on this device, so the original photo is used.", useOriginal:"Use original photo",
+  cleanUp:"✦ Clean up photo", cleanedSaved:"Photo cleaned up", cleanWait:"Finishing photo clean-up…",
+  personToggle:"Someone is wearing it in this photo",
+  photos:"Photos", kFront:"Front", kBack:"Back", kDetail:"Detail", addBack:"＋ Back photo", addDetail:"＋ Detail photo",
+  setMain:"Use as main photo", removePhoto:"Remove this photo", photoAdded:"Photo added", addingPhoto:"Adding photo…", photoFail:"Couldn't add the photo. Try again.",
+  backOfPrev:"This is the back of the previous piece", backOfPrevNote:"It will be added to the previous piece as its back photo, so no tags are needed.",
+  hasBack:"BACK", backPrefix:"Back: ", flipHint:"Tap the picture to see the back",
+  select:"Select", selectedN:n=>`${n} selected`, selectAll:"Select all", selDone:"Done",
+  deleteN:n=>`Delete ${n}`, confirmDeleteN:n=>`Tap again to delete ${n}`, deletingN:(d,n)=>`Deleting ${d} of ${n}…`, deletedN:n=>`Deleted ${n}`,
+  removeLogo:"✦ Remove logo", logoTitle:"Remove logos and watermarks",
+  logoIntro:"Paint over the logo, watermark or text you want gone, then tap “Remove marked area”. It is filled in from the colors around it.",
+  brush:"Brush", autoFind:"✦ Find logos", undo:"Undo", clearMarks:"Clear marks", applyRemove:"Remove marked area", saveImg:"Save", cancel:"Cancel",
+  finding:"Claude is looking for logos…", foundN:n=>`Found ${n}. Check the marks, adjust with the brush, then tap “Remove marked area”.`,
+  foundNone:"No logos or watermarks found. Paint over it yourself.", findFail:"Couldn't look for logos this time. Paint over it yourself.",
+  garmentLogos:n=>`Also mark ${n} logo${n>1?"s":""} printed on the garment`,
+  removed:"Removed. Paint more and remove again, or tap Save.", markFirst:"Paint over the area first.", logoSaved:"Photo updated",
+  backup:"Backup", backupTitle:"Back up your closet",
+  backupIntro:"Save everything (pieces, photos, outfits and wear history) to one file. Keep it somewhere safe, or import it on a new phone. Your closet only lives on this device, so back up now and then.",
+  includeDemo:"Include demo pieces", exportBtn:"Export backup", importBtn:"Import from backup",
+  importIntro:"Importing adds the pieces and outfits from a backup file. Pieces that are already here are skipped, so importing twice won't create duplicates.",
+  packing:(d,n)=>`Packing photos ${d} of ${n}…`, exportDone:"Backup saved", exportDeclined:"Saving was cancelled",
+  exportFail:"Couldn't save the backup. Try again.", exportUnavailable:"Saving files isn't available in this view. Open the app on claude.ai to export.",
+  importing:(d,n)=>`Importing ${d} of ${n}…`,
+  importDone:(a,o,sk)=>`Imported ${a} pieces and ${o} outfits${sk?`, skipped ${sk} already here`:""}.`,
+  importBad:"This file isn't a closet backup.", importFail:n=>`${n} pieces couldn't be imported. Import the file again to retry; finished pieces are skipped.`,
+  lastBackup:d=>`Last backup on this device: ${d}`, backupSize:(n,mb)=>`${n} pieces · about ${mb} MB`,
+  cleaningPerson:"Cutting the garment off the model… this takes a little longer.",
+  cleanFirstPerson:"Getting the tool for photos of people ready. The first time takes a while (about 45 MB to download once).",
+  cleanedPerson:"Garment cut off the model and placed on white, with light and colors evened out.",
+  personNeedCat:"Pick a category so the app knows which garment to cut out.",
+  personNoCls:"Shoes, bags and accessories can't be separated from the person, so the whole figure is kept.",
+  fName:"Name", fNamePh:"e.g. Cream cable-knit sweater", fCat:"Category", fColors:"Colors", fSeason:"Season", fNotes:"Notes", fNotesPh:"Brand, where you bought it, what it goes with",
+  wornN:n=>`WORN ${n}×`, lastD:d=>`LAST ${d}`, never:"NEVER WORN", inOutfits:n=>`IN ${n} OUTFIT${n===1?"":"S"}`,
+  tagColorsFirst:"Tag this piece's colors to see what it goes well with.", noColorMatch:"No color matches in your closet yet.", goesWith:"Goes well with",
+  styleThis:"Style this", saveChanges:"Save changes", saved:"Saved", saveFailShort:"Couldn't save. Try again.",
+  delUsed:n=>`Delete (used in ${n} outfit${n>1?"s":""})?`, tapDel:"Tap again to delete", deleted:"Deleted", delFail:"Couldn't delete. Try again.",
+  loadFail:"Couldn't load your clothes. Reload the page to try again.", close:"Close"
+},
+zh:{
+  title:"我的衣橱", add:"＋ 添加衣服", loading:"正在加载衣橱…", emptySub:"衣橱还是空的",
+  sub:(n,o,u)=>`${n} 件单品 · ${o} 套搭配 · ${u} 件还没穿过`,
+  localBanner:"这个浏览器不允许保存数据（可能是无痕模式），关闭后添加的内容会消失。请在普通窗口中打开。",
+  demo:n=>`这里有 ${n} 件示例单品（插画），方便你先试用。准备添加自己的衣服时可以一键删除。`,
+  removeDemo:"删除示例单品", tapAgainRemove:"再点一次确认删除", removing:"正在删除…", demoRemoved:"示例单品已删除", demoRemoveFail:"部分示例单品没能删除，请再试一次。",
+  tabCloset:"衣橱", tabMix:"搭配", tabOutfits:"已存搭配",
+  emptyTitle:"衣橱还是空的",
+  emptyCloset:"给每件衣服拍一张照片（平铺或挂起来都行），然后添加到这里。App 会自动抠图并换成白色背景。所有内容只保存在这台手机上。",
+  emptyMix:"添加一些上衣、下装和鞋子后，就可以在这里翻看各种组合，并保存喜欢的搭配。",
+  addFirst:"＋ 添加第一批照片", all:"全部", search:"搜索名称和备注", anyColor:"所有颜色",
+  sortNew:"最新添加", sortLeast:"最少穿", sortMost:"最常穿", sortName:"按名称", noMatch:"没有符合筛选条件的单品。",
+  badgeNew:"新", badgeUnworn:"还没穿过", worn:n=>`穿过 ${n} 次`,
+  slotLabels:{outerwear:"外套",top:"上衣、连衣裙或套装",bottom:"下装",shoes:"鞋子",bag:"包袋",accessory:"配饰"},
+  optional:"可选", noneAdded:"尚未<br>添加", skip:"不穿", nothingYet:"这个类别还没有单品", notWearing:"这次不搭",
+  lock:"锁定", locked:"已锁定", prev:"上一件", next:"下一件",
+  thisLook:"当前搭配", season:"季节", anySeason:"所有季节", onlyMatch:"只选配色协调的", shuffle:"⟳ 随机换未锁定的",
+  lockNote:"先锁定已经选好的单品，再随机换其余的。", outfitName:"搭配名称", outfitPh:"例如：周五上班",
+  saveOutfit:"保存搭配", wearToday:"今天穿这套",
+  wearNote:"点“今天穿这套”会保存搭配，并给每件单品记一次穿着，方便发现很少穿的衣服。",
+  defaultOutfit:n=>`搭配 ${n}`, alreadySaved:"这套搭配已经保存过了", loggedWorn:"已记录今天的穿搭", outfitSaved:"搭配已保存",
+  saveFail:"保存失败，请检查网络后重试。", alreadyToday:"今天已经记录过了",
+  noOutfitsTitle:"还没有保存的搭配", noOutfits:"在“搭配”里组合一套并保存，就会显示在这里。", goMix:"去搭配",
+  pieces:n=>`${n} 件单品`, last:d=>`上次 ${d}`, editMix:"编辑搭配", del:"删除", tapAgain:"再点一次", outfitDeleted:"搭配已删除",
+  todayTitle:"今天穿什么？", nudgeLabel:"今日提醒：",
+  nudgeSince:(n,d)=>`你的${n}从 ${d} 之后就没穿过了。点一下，以它为主来搭配。`,
+  nudgeNever:n=>`你的${n}还没穿过。点一下，以它为主来搭配。`,
+  weather:"天气", occasion:"场合", thinking:"思考中…", suggestClaude:"✦ 让 Claude 推荐搭配", suggest:"✦ 推荐一套搭配", tip:"小贴士：",
+  needMore:"请先多添加几件单品", needMoreWhy:"至少需要一些上衣或连衣裙，以及一双鞋，才能推荐完整的搭配。",
+  quickTitle:(w,o)=>`${w}天 · ${o}`,
+  busyClaude:"Claude 现在比较忙，这是根据配色规则快速挑选的搭配。",
+  offClaude:"此页面已关闭 Claude 推荐，这是根据配色规则快速挑选的搭配。",
+  failClaude:"Claude 这次没能回答，这是根据配色规则快速挑选的搭配。",
+  tagTitle:"给衣服加标签", photoOf:(i,n)=>`第 ${i} / ${n} 张`, carry:"标签会沿用上一张照片的设置",
+  back:"上一张", skipPhoto:"跳过这张", nextPhoto:"下一张", addN:n=>`添加 ${n} 件到衣橱`,
+  pickCat:"请选择类别，这样它才会出现在“搭配”中。",
+  adding:"正在添加到衣橱", ofN:(d,n)=>`${d} / ${n}`,
+  addedN:n=>`已添加 ${n} 件到衣橱`, addedSome:(ok,f)=>`已添加 ${ok} 件，${f} 张照片上传失败，请重试。`,
+  detecting:"Claude 正在识别这件单品…", detected:"已由 Claude 自动填写，请检查并修改不准确的地方。",
+  detectFail:"这张没能自动识别，请手动填写标签。",
+  detectOff:"此页面已关闭自动识别，请手动填写标签。",
+  reidentify:"✦ 重新识别",
+  cleaning:"正在优化照片…", cleanFirst:"正在准备照片工具，首次使用需要下载约 55 MB，请稍候。",
+  cleaned:"已换成白色背景，并统一了亮度和色调。", cleanedNoCut:"没能识别出衣服的轮廓，只调整了亮度和色彩。",
+  cleanFail:"此设备无法优化照片，将使用原图。", useOriginal:"使用原图",
+  cleanUp:"✦ 优化照片", cleanedSaved:"照片已优化", cleanWait:"正在完成照片优化…",
+  personToggle:"照片里有人穿着",
+  photos:"照片", kFront:"正面", kBack:"背面", kDetail:"细节", addBack:"＋ 背面照片", addDetail:"＋ 细节照片",
+  setMain:"设为主图", removePhoto:"删除这张照片", photoAdded:"照片已添加", addingPhoto:"正在添加照片…", photoFail:"照片添加失败，请重试。",
+  backOfPrev:"这是上一件的背面", backOfPrevNote:"这张会作为上一件单品的背面照片，不需要再加标签。",
+  hasBack:"有背面", backPrefix:"背面：", flipHint:"点图片可查看背面",
+  select:"选择", selectedN:n=>`已选 ${n} 项`, selectAll:"全选", selDone:"完成",
+  deleteN:n=>`删除 ${n} 项`, confirmDeleteN:n=>`再点一次删除 ${n} 项`, deletingN:(d,n)=>`正在删除 ${d} / ${n}…`, deletedN:n=>`已删除 ${n} 项`,
+  removeLogo:"✦ 去除 logo", logoTitle:"去除 logo 和水印",
+  logoIntro:"用画笔涂抹要去掉的 logo、水印或文字，再点「去除标记区域」，会用周围的颜色把它填补上。",
+  brush:"画笔", autoFind:"✦ 自动找 logo", undo:"撤销", clearMarks:"清除标记", applyRemove:"去除标记区域", saveImg:"保存", cancel:"取消",
+  finding:"Claude 正在查找 logo…", foundN:n=>`找到 ${n} 处。检查一下标记，可以用画笔调整，然后点「去除标记区域」。`,
+  foundNone:"没有找到 logo 或水印，请手动涂抹。", findFail:"这次没能查找 logo，请手动涂抹。",
+  garmentLogos:n=>`也标记衣服上印的 ${n} 个 logo`,
+  removed:"已去除。可以继续涂抹再去除，或点「保存」。", markFirst:"请先涂抹要去除的区域。", logoSaved:"照片已更新",
+  backup:"备份", backupTitle:"备份衣橱",
+  backupIntro:"把所有单品、照片、搭配和穿着记录保存成一个文件，可以存到网盘，或在新手机上导入。衣橱只保存在这台设备上，建议定期备份。",
+  includeDemo:"包含示例单品", exportBtn:"导出备份", importBtn:"从备份导入",
+  importIntro:"导入会把备份文件里的单品和搭配加进来。已经存在的单品会自动跳过，重复导入也不会产生重复。",
+  packing:(d,n)=>`正在打包照片 ${d} / ${n}…`, exportDone:"备份已保存", exportDeclined:"已取消保存",
+  exportFail:"备份保存失败，请重试。", exportUnavailable:"当前页面无法保存文件，请在 claude.ai 中打开小程序后再导出。",
+  importing:(d,n)=>`正在导入 ${d} / ${n}…`,
+  importDone:(a,o,sk)=>`已导入 ${a} 件单品和 ${o} 套搭配${sk?`，跳过 ${sk} 件已有单品`:""}。`,
+  importBad:"这个文件不是衣橱备份。", importFail:n=>`有 ${n} 件单品导入失败。再导入一次即可重试，已完成的会自动跳过。`,
+  lastBackup:d=>`这台设备上次备份：${d}`, backupSize:(n,mb)=>`${n} 件单品 · 约 ${mb} MB`,
+  cleaningPerson:"正在把衣服从模特身上抠出来…会稍慢一些。",
+  cleanFirstPerson:"正在准备人物照片工具，首次使用需要下载约 45 MB，请稍候。",
+  cleanedPerson:"已把衣服从模特身上抠出，换成白色背景，并统一了亮度和色调。",
+  personNeedCat:"请先选择类别，才能知道要抠出哪件衣服。",
+  personNoCls:"鞋子、包袋和配饰无法与人物分开，所以会保留整个人物。",
+  fName:"名称", fNamePh:"例如：米色麻花毛衣", fCat:"类别", fColors:"颜色", fSeason:"季节", fNotes:"备注", fNotesPh:"品牌、购买地点、适合搭配什么",
+  wornN:n=>`穿过 ${n} 次`, lastD:d=>`上次 ${d}`, never:"还没穿过", inOutfits:n=>`在 ${n} 套搭配中`,
+  tagColorsFirst:"标注这件单品的颜色后，就能看到适合和它搭配的衣服。", noColorMatch:"衣橱里暂时没有配色协调的单品。", goesWith:"适合搭配",
+  styleThis:"以它来搭配", saveChanges:"保存修改", saved:"已保存", saveFailShort:"保存失败，请重试。",
+  delUsed:n=>`删除？（用在 ${n} 套搭配中）`, tapDel:"再点一次确认删除", deleted:"已删除", delFail:"删除失败，请重试。",
+  loadFail:"衣服加载失败，请刷新页面重试。", close:"关闭"
+}};
+const t = k => STR[LANG][k];
+
+/* ---------- vocab ---------- */
+const CAT_IDS = ["top","bottom","dress","set","outerwear","shoes","bag","accessory"];
+const ONE_PIECE = new Set(["dress","set"]);  // fills both top and bottom
+const CAT_PLURAL = {en:{top:"Tops",bottom:"Bottoms",dress:"Dresses",set:"Sets",outerwear:"Outerwear",shoes:"Shoes",bag:"Bags",accessory:"Accessories"},
+  zh:{top:"上衣",bottom:"下装",dress:"连衣裙",set:"套装",outerwear:"外套",shoes:"鞋子",bag:"包袋",accessory:"配饰"}};
+const CAT_ONE_L = {en:{top:"Top",bottom:"Bottom",dress:"Dress",set:"Set",outerwear:"Outerwear",shoes:"Shoes",bag:"Bag",accessory:"Accessory"},
+  zh:{top:"上衣",bottom:"下装",dress:"连衣裙",set:"套装",outerwear:"外套",shoes:"鞋子",bag:"包袋",accessory:"配饰"}};
+const catOne = c => CAT_ONE_L[LANG][c] || c;
+const COLORS = [
+  ["black","#151515"],["white","#fafafa"],["grey","#9a9ca3"],["beige","#d9c7a7"],["brown","#7a5233"],
+  ["navy","#22305a"],["blue","#4f86c6"],["green","#4f7f52"],["red","#c23a32"],["pink","#eaa3bf"],
+  ["purple","#7d4e9e"],["yellow","#e9c94a"],["orange","#e07b39"],["pattern","conic-gradient(#c23a32 0 25%,#22305a 0 50%,#e9c94a 0 75%,#fafafa 0)"]
+];
+const COLOR_IDS = COLORS.map(c=>c[0]);
+const COLOR_MAP = Object.fromEntries(COLORS);
+const COLOR_ZH = {black:"黑色",white:"白色",grey:"灰色",beige:"米色",brown:"棕色",navy:"藏青色",blue:"蓝色",green:"绿色",red:"红色",pink:"粉色",purple:"紫色",yellow:"黄色",orange:"橙色",pattern:"图案"};
+const colorName = c => LANG==="zh" ? COLOR_ZH[c] : c;
+const SEASONS = {en:[["all","All year"],["ss","Spring / summer"],["aw","Autumn / winter"]], zh:[["all","全年"],["ss","春夏"],["aw","秋冬"]]};
+const SEASON_SHORT = {en:{all:"All year",ss:"SS",aw:"AW"}, zh:{all:"全年",ss:"春夏",aw:"秋冬"}};
+
+/* ---------- state ---------- */
+let db=null, assets=null, sample=null, downloads=null, canSeeImages=false, local=false, ready=false;
+let items=[], outfits=[];
+const SEL = {on:false, tab:"closet", ids:new Set(), visible:[], armed:false, busy:false};
+const S = {tab:"closet", cat:"all", q:"", sort:"new", color:"all",
+  today:{weather:[11,12,1,2,3].includes(new Date().getMonth()+1)?"cold":([6,7,8].includes(new Date().getMonth()+1)?"warm":"mild"), occasion:"casual", busy:false, answer:null},
+  mix:{season:"any", smart:true, slots:{outerwear:null,top:null,bottom:null,shoes:null,bag:null,accessory:null}, locks:{}}};
+const SLOTS = [
+  {id:"outerwear", cats:["outerwear"], optional:true},
+  {id:"top", cats:["top","dress","set"]},
+  {id:"bottom", cats:["bottom"]},
+  {id:"shoes", cats:["shoes"]},
+  {id:"bag", cats:["bag"], optional:true},
+  {id:"accessory", cats:["accessory"], optional:true}
+];
+const $ = s=>document.querySelector(s);
+const esc = s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const imgSrc = it => it.localUrl || (it.assetId ? (URLS.get(it.assetId)||"") : "");
+const byId = id => items.find(i=>i.id===id);
+const blobSrc = a => a ? (a.startsWith("blob:") ? a : (URLS.get(a)||"")) : "";
+const extraPhotos = it => Array.isArray(it.photos) ? it.photos : [];
+const backSrc = it => { const b=extraPhotos(it).find(p=>p.kind==="back"); return b ? blobSrc(b.id) : ""; };
+const nameOf = it => (LANG==="zh" ? (it.nameZh||it.name) : (it.name||it.nameZh)) || catOne(it.category);
+const nameField = () => LANG==="zh" ? "nameZh" : "name";
+const today = () => { const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); };
+function fmtDate(s){ if(!s) return ""; const d=new Date(s+"T12:00:00"); return d.toLocaleDateString(LANG==="zh"?"zh-CN":undefined,{day:"numeric",month:"short"}); }
+function toast(msg){ const el=$("#toast"); el.textContent=msg; el.hidden=false; clearTimeout(toast._t); toast._t=setTimeout(()=>el.hidden=true,2400); }
+try{ const st=JSON.parse(localStorage.getItem("closet-ui")||"{}"); if(st.tab) S.tab=st.tab; if(st.sort) S.sort=st.sort; }catch(e){}
+function rememberUi(){ try{ localStorage.setItem("closet-ui",JSON.stringify({tab:S.tab,sort:S.sort})); }catch(e){} }
+
+/* ---------- persistence ---------- */
+
+/* ---------- on-device storage (IndexedDB): same interface the app used on Claude ---------- */
+const URLS = new Map();                 // photo id -> object URL
+const DATA = {items:new Map(), outfits:new Map()};
+const LISTEN = {items:[], outfits:[]};
+let IDB = null;
+function idbOpen(){
+  return new Promise((res,rej)=>{
+    const r=indexedDB.open("my-closet",1);
+    r.onupgradeneeded=()=>{ const d=r.result;
+      for(const n of ["items","outfits"]) if(!d.objectStoreNames.contains(n)) d.createObjectStore(n,{keyPath:"id"});
+      if(!d.objectStoreNames.contains("photos")) d.createObjectStore("photos"); };
+    r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); r.onblocked=()=>rej(new Error("blocked"));
+  });
+}
+const idbWrite=(store,fn)=>new Promise((res,rej)=>{ const tx=IDB.transaction(store,"readwrite"); fn(tx.objectStore(store)); tx.oncomplete=()=>res(); tx.onerror=()=>rej(tx.error); tx.onabort=()=>rej(tx.error||new Error("aborted")); });
+const idbAll=store=>new Promise((res,rej)=>{ const r=IDB.transaction(store).objectStore(store).getAll(); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); });
+const idbEach=(store,fn)=>new Promise((res,rej)=>{ const r=IDB.transaction(store).objectStore(store).openCursor();
+  r.onsuccess=()=>{ const c=r.result; if(!c) return res(); fn(c.key,c.value); c.continue(); }; r.onerror=()=>rej(r.error); });
+const plain=o=>JSON.parse(JSON.stringify(o));
+const newId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,9);
+function snapOf(coll){ const docs=[...DATA[coll].values()].map(v=>{ const {id,...rest}=v; return {id, exists:true, data:()=>rest}; }); return {docs,size:docs.length,empty:!docs.length}; }
+function emit(coll){ const s=snapOf(coll); LISTEN[coll].forEach(f=>{ try{ f(s); }catch(e){ console.error(e); } }); }
+const localDb={
+  collection(name){ return {
+    onSnapshot(cb){ LISTEN[name].push(cb); cb(snapOf(name)); return ()=>{ LISTEN[name]=LISTEN[name].filter(f=>f!==cb); }; },
+    async add(data){ const id=newId(); const v={...plain(data),id}; await idbWrite(name,st=>st.put(v)); DATA[name].set(id,v); emit(name); return {id}; },
+    doc(id){ return localDb.doc(name+"/"+id); } }; },
+  doc(path){ const [name,id]=path.split("/"); return {
+    async get(){ const v=DATA[name].get(id); return {id, exists:!!v, data:()=>{ if(!v) return undefined; const {id:_,...r}=v; return r; }}; },
+    async set(data){ const v={...plain(data),id}; await idbWrite(name,st=>st.put(v)); DATA[name].set(id,v); emit(name); },
+    async update(patch){ const cur=DATA[name].get(id); if(!cur) throw new Error("not found"); const v={...cur,...plain(patch),id};
+      for(const k of Object.keys(v)) if(v[k] && v[k].__delete__) delete v[k];
+      await idbWrite(name,st=>st.put(v)); DATA[name].set(id,v); emit(name); },
+    async delete(){ await idbWrite(name,st=>st.delete(id)); DATA[name].delete(id); emit(name); } }; }
+};
+const localAssets={
+  async upload(blob){ const id=newId(); await idbWrite("photos",st=>st.put(blob,id)); const url=URL.createObjectURL(blob); URLS.set(id,url); return {id,url,sizeBytes:blob.size,contentType:blob.type}; },
+  async delete(id){ await idbWrite("photos",st=>st.delete(id)); const u=URLS.get(id); if(u) URL.revokeObjectURL(u); URLS.delete(id); }
+};
+/* backups: the phone's share sheet when it can take files (save to Files, send to a chat), otherwise a normal download */
+const localDownloads={
+  async save({filename,data}){
+    const blob = data instanceof Blob ? data : new Blob([data],{type:"application/json"});
+    const file = new File([blob], filename, {type:"application/json"});
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      try{ await navigator.share({files:[file], title:filename}); return; }
+      catch(e){ if(e && e.name==="AbortError") throw {code:"declined"}; }
+    }
+    const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=filename;
+    document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },5000);
+  }
+};
+async function openLocalStore(){
+  IDB = await idbOpen();
+  for(const c of ["items","outfits"]) for(const v of await idbAll(c)) DATA[c].set(v.id,v);
+  await idbEach("photos",(k,b)=>URLS.set(k,URL.createObjectURL(b)));
+  try{ if(navigator.storage && navigator.storage.persist) await navigator.storage.persist(); }catch(e){}
+}
+async function boot(){
+  applyLang();
+  try{ await openLocalStore(); db=localDb; assets=localAssets; }catch(e){ console.warn("Storage unavailable:",e); db=null; assets=null; }
+  downloads=localDownloads; sample=null; canSeeImages=false;   // no Claude here: manual tags and rule-based picks
+  ready=true;
+  if(!db){ local=true; $("#localBanner").hidden=false; render(); return; }
+  db.collection("items").onSnapshot(snap=>{ items = snap.docs.map(d=>({id:d.id,...d.data()})); render(); },
+    ()=>toast(t("loadFail")));
+  db.collection("outfits").onSnapshot(snap=>{ outfits = snap.docs.map(d=>({id:d.id,...d.data()})); render(); });
+  if(!assets) $("#addBtn").hidden = true;
+  render();
+}
+async function saveItem(data, file){
+  if(local){ const id="l"+Math.random().toString(36).slice(2); items.push({id,...data,localUrl:URL.createObjectURL(file)}); render(); return id; }
+  const up = await assets.upload(file);
+  const ref = await db.collection("items").add({...data, assetId:up.id});
+  return ref.id;
+}
+async function updateItem(id, patch){
+  if(local){ Object.assign(byId(id),patch); render(); return; }
+  await db.doc("items/"+id).update(patch);
+}
+async function deleteItem(id){
+  const it=byId(id);
+  if(local){ items=items.filter(i=>i.id!==id); render(); return; }
+  await db.doc("items/"+id).delete();
+  if(it?.assetId && assets){ try{ await assets.delete(it.assetId); }catch(e){} }
+  if(assets) for(const ph of extraPhotos(it||{})){ try{ await assets.delete(ph.id); }catch(e){} }
+}
+/* store an extra photo (back or detail) on an item */
+async function addPhoto(id, blob, kind){
+  const it=byId(id); if(!it) return;
+  if(local){ const photos=[...extraPhotos(it),{id:URL.createObjectURL(blob),kind}]; await updateItem(id,{photos}); return; }
+  const up=await assets.upload(blob);
+  const fresh=byId(id)||it;
+  await updateItem(id,{photos:[...extraPhotos(fresh),{id:up.id,kind}]});
+}
+/* Claude describes what is special about the back, appended to the notes */
+async function describeBack(id, blob){
+  if(!(sample && canSeeImages)) return;
+  try{
+    const small=await shrink(blob,768,0.8);
+    const lang = LANG==="zh" ? "Simplified Chinese" : "English";
+    const txt=(await sample(`This photo shows the BACK of a clothing item. In ${lang}, describe only what is notable about the back (print, cut-out, lace-up, buttons, pleats, logo, open back), in at most 8 words. If nothing is special, reply with exactly: none`,{images:[small],modelTier:"quick"})).text.trim().replace(/^["'“]|["'”.。]$/g,"");
+    if(!txt || /^none$/i.test(txt)) return;
+    const it=byId(id); if(!it) return;
+    const line=t("backPrefix")+txt;
+    if((it.notes||"").includes(line)) return;
+    await updateItem(id,{notes:(it.notes?it.notes+(LANG==="zh"?"；":"; "):"")+line});
+  }catch(e){}
+}
+async function saveOutfit(data){
+  if(local){ outfits.push({id:"o"+Date.now(),...data}); render(); return; }
+  await db.collection("outfits").add(data);
+}
+async function updateOutfit(id,patch){
+  if(local){ Object.assign(outfits.find(o=>o.id===id),patch); render(); return; }
+  await db.doc("outfits/"+id).update(patch);
+}
+async function deleteOutfit(id){
+  if(local){ outfits=outfits.filter(o=>o.id!==id); render(); return; }
+  await db.doc("outfits/"+id).delete();
+}
+
+/* ---------- image shrink ---------- */
+function shrink(file, max=1200, q=0.85){
+  return new Promise((res)=>{
+    const img=new Image(); const url=URL.createObjectURL(file);
+    img.onload=()=>{
+      const k=Math.min(1,max/Math.max(img.width,img.height));
+      const c=document.createElement("canvas"); c.width=Math.max(1,Math.round(img.width*k)); c.height=Math.max(1,Math.round(img.height*k));
+      const g=c.getContext("2d"); g.fillStyle="#fff"; g.fillRect(0,0,c.width,c.height); g.drawImage(img,0,0,c.width,c.height);
+      c.toBlob(b=>{ URL.revokeObjectURL(url); res(b||file); },"image/jpeg",q);
+    };
+    img.onerror=()=>{ URL.revokeObjectURL(url); res(file); };
+    img.src=url;
+  });
+}
+
+/* ---------- automatic recognition ---------- */
+async function identify(blob){
+  const small = await shrink(blob, 768, 0.8);
+  const prompt = `Look at this photo of a clothing item from someone's wardrobe. Identify the single main item.
+Reply with JSON only:
+{"category": one of ${JSON.stringify(CAT_IDS)} (use "top" for shirts, blouses, sweaters, T-shirts; "bottom" for trousers, jeans, skirts, shorts; "dress" for dresses and jumpsuits; "set" for a matching set shown together, like a suit, co-ord, tracksuit or pajama set where top and bottom share the same fabric or print; "outerwear" for coats, jackets, blazers, cardigans worn open; "accessory" for scarves, hats, belts, jewelry, sunglasses. If a person is wearing several pieces, pick the piece the photo is about, usually the most prominent one),
+ "onPerson": true if a person or mannequin is wearing the item in the photo, false if it is laid flat, hanging or standing alone,
+ "colors": 1-3 main colors chosen only from ${JSON.stringify(COLOR_IDS.filter(c=>c!=="pattern"))}, listing the dominant color first; add "pattern" as well if it is striped, checked, floral, printed or dotted,
+ "season": "aw" for warm or heavy items (wool, knits, coats, boots), "ss" for light summer items (linen, sandals, sleeveless), otherwise "all",
+ "name": short English name, 2-5 words, like "Cream cable-knit sweater",
+ "nameZh": the same name in Simplified Chinese, like "米色麻花毛衣",
+ "notes": material or style details you can see, max 8 words in ${LANG==="zh"?"Simplified Chinese":"English"}, or ""}`;
+  const a = await sample.json(prompt, {images:[small], modelTier:"quick"});
+  const out = {};
+  if(CAT_IDS.includes(a?.category)) out.category=a.category;
+  if(Array.isArray(a?.colors)) out.colors=[...new Set(a.colors.filter(c=>COLOR_IDS.includes(c)))].slice(0,4);
+  if(["all","ss","aw"].includes(a?.season)) out.season=a.season;
+  if(typeof a?.name==="string") out.name=a.name.slice(0,60);
+  if(typeof a?.nameZh==="string") out.nameZh=a.nameZh.slice(0,40);
+  if(typeof a?.notes==="string") out.notes=a.notes.slice(0,120);
+  out.onPerson = a?.onPerson===true;
+  return out;
+}
+
+/* ---------- photo clean-up: cut out, even out light and color, white background ---------- */
+/* Two models run in a background worker:
+   flat   = general cut-out (garment laid flat or on a hanger), 320 px input
+   person = clothing segmentation (background / upper / lower / full-body), 512 px input, for photos of someone wearing it */
+const MILK = "#ffffff";   // photo background: pure white
+const MODELS = {flat:{file:"model/silueta.part", parts:3, size:320}, person:{file:"model/cloth.part", parts:3, size:512}};
+const PERSON_CLASSES = {top:[1], outerwear:[1,3], bottom:[2], dress:[1,2,3], set:[1,2,3]};
+const CLEAN = {ready:null, failed:false, loaded:{}, seq:0, pending:new Map()};
+function cleanWorker(){
+  if(CLEAN.ready) return CLEAN.ready;
+  CLEAN.ready = new Promise((res,rej)=>{
+    try{
+      const w=new Worker("worker.js?v=1.0.0");
+      w.onmessage=e=>{
+        const d=e.data;
+        if(d.type==="ready") return res(w);
+        if(d.type==="init-error") return rej(new Error(d.error));
+        const p=CLEAN.pending.get(d.id); if(!p) return; CLEAN.pending.delete(d.id);
+        d.error ? p.rej(new Error(d.error)) : p.res(d.out);
+      };
+      w.onerror=e=>rej(new Error(e.message||"worker failed"));
+      w.postMessage({type:"init", base:new URL("./",location.href).href});
+    }catch(err){ rej(err); }
+  });
+  CLEAN.ready.catch(err=>{ CLEAN.failed=true; console.warn("Photo clean-up unavailable:", err); });
+  return CLEAN.ready;
+}
+async function runModel(model, input){
+  const w=await cleanWorker(); const id=++CLEAN.seq;
+  const out=await new Promise((res,rej)=>{ CLEAN.pending.set(id,{res,rej}); w.postMessage({type:"run",id,model,spec:MODELS[model],input},[input.buffer]); });
+  CLEAN.loaded[model]=true;
+  return out;
+}
+function loadImg(blob){
+  return new Promise((res,rej)=>{ const u=URL.createObjectURL(blob); const im=new Image();
+    im.onload=()=>{ URL.revokeObjectURL(u); res(im); }; im.onerror=()=>{ URL.revokeObjectURL(u); rej(new Error("image")); }; im.src=u; });
+}
+const mkCanvas=(w,h)=>{ const c=document.createElement("canvas"); c.width=w; c.height=h; return c; };
+const ctx2d=c=>c.getContext("2d",{willReadFrequently:true});
+const toJpeg=(c,q=0.9)=>new Promise(res=>c.toBlob(res,"image/jpeg",q));
+
+/* light, contrast and white balance; white balance only uses a neutral-looking background */
+function correctColors(px, alpha, n){
+  let gains=[1,1,1];
+  if(alpha){
+    let r=0,g=0,b=0,c=0;
+    for(let p=0;p<n;p++) if(alpha[p]<0.1){ const i=p*4; r+=px[i]; g+=px[i+1]; b+=px[i+2]; c++; }
+    if(c>0.05*n){
+      const m=[r/c,g/c,b/c], mx=Math.max(...m), mn=Math.min(...m);
+      if(mx>0 && (mx-mn)/mx<0.1){ const avg=(m[0]+m[1]+m[2])/3; gains=m.map(v=>Math.min(1.2,Math.max(0.85,Math.pow(avg/Math.max(v,1),0.8)))); }
+    }
+  }
+  const hist=new Uint32Array(256);
+  for(let p=0;p<n;p++){ const i=p*4; const L=0.299*px[i]*gains[0]+0.587*px[i+1]*gains[1]+0.114*px[i+2]*gains[2]; hist[Math.min(255,L|0)]++; }
+  const pct=f=>{ let acc=0; const target=f*n; for(let v=0;v<256;v++){ acc+=hist[v]; if(acc>=target) return v; } return 255; };
+  const lo=pct(0.01), hi=pct(0.995), med=pct(0.5);
+  const off = lo>12 ? (lo-12)*0.8 : 0;
+  const gain = Math.min(1.7, Math.max(0.9, 242/Math.max(hi-off,1)));
+  const gamma = (med-off)*gain < 100 ? 0.85 : 1;
+  const lut=[0,1,2].map(ch=>{ const t=new Uint8ClampedArray(256);
+    for(let v=0;v<256;v++){ let x=(v*gains[ch]-off)*gain; x=Math.min(255,Math.max(0,x)); t[v]=gamma===1?x:255*Math.pow(x/255,gamma); } return t; });
+  for(let p=0;p<n;p++){ const i=p*4; px[i]=lut[0][px[i]]; px[i+1]=lut[1][px[i+1]]; px[i+2]=lut[2][px[i+2]]; }
+}
+
+/* photo → working canvas (max 1400 px) */
+async function prepPhoto(blob){
+  const img=await loadImg(blob);
+  const k=Math.min(1,1400/Math.max(img.naturalWidth,img.naturalHeight));
+  const W=Math.max(1,Math.round(img.naturalWidth*k)), H=Math.max(1,Math.round(img.naturalHeight*k));
+  const c=mkCanvas(W,H), cx=ctx2d(c); cx.fillStyle="#fff"; cx.fillRect(0,0,W,H); cx.drawImage(img,0,0,W,H);
+  return {W,H,c,px:cx.getImageData(0,0,W,H).data};
+}
+function modelInput(prep, S){
+  const s=mkCanvas(S,S), sx=ctx2d(s); sx.drawImage(prep.c,0,0,S,S);
+  const sd=sx.getImageData(0,0,S,S).data, N=S*S;
+  let mx=1; for(let i=0;i<sd.length;i+=4) mx=Math.max(mx,sd[i],sd[i+1],sd[i+2]);
+  const inp=new Float32Array(3*N);
+  for(let p=0;p<N;p++){ const i=p*4; inp[p]=(sd[i]/mx-0.485)/0.229; inp[N+p]=(sd[i+1]/mx-0.456)/0.224; inp[2*N+p]=(sd[i+2]/mx-0.406)/0.225; }
+  return inp;
+}
+/* a 0..1 plane at S×S → W×H via smooth canvas scaling */
+function upsample(plane, S, W, H){
+  const s=mkCanvas(S,S), sx=ctx2d(s), im=sx.createImageData(S,S);
+  for(let p=0;p<S*S;p++){ const v=Math.max(0,Math.min(1,plane[p]))*255, i=p*4; im.data[i]=im.data[i+1]=im.data[i+2]=v; im.data[i+3]=255; }
+  sx.putImageData(im,0,0);
+  const m=mkCanvas(W,H), mx=ctx2d(m); mx.imageSmoothingQuality="high"; mx.drawImage(s,0,0,W,H);
+  const md=mx.getImageData(0,0,W,H).data, out=new Float32Array(W*H);
+  for(let p=0;p<W*H;p++) out[p]=md[p*4]/255;
+  return out;
+}
+
+/* drop stray patches: keep connected regions at least 15% the size of the largest one */
+function keepMainRegions(plane,S){
+  const N=S*S, lab=new Int32Array(N).fill(-1), sizes=[], stack=new Int32Array(N);
+  for(let p=0;p<N;p++){
+    if(plane[p]<=0.5 || lab[p]!==-1) continue;
+    const id=sizes.length; let top=0, size=0; stack[top++]=p; lab[p]=id;
+    while(top){ const q=stack[--top]; size++; const x=q%S, y=(q/S)|0;
+      if(x>0   && lab[q-1]===-1 && plane[q-1]>0.5){ lab[q-1]=id; stack[top++]=q-1; }
+      if(x<S-1 && lab[q+1]===-1 && plane[q+1]>0.5){ lab[q+1]=id; stack[top++]=q+1; }
+      if(y>0   && lab[q-S]===-1 && plane[q-S]>0.5){ lab[q-S]=id; stack[top++]=q-S; }
+      if(y<S-1 && lab[q+S]===-1 && plane[q+S]>0.5){ lab[q+S]=id; stack[top++]=q+S; } }
+    sizes.push(size);
+  }
+  if(!sizes.length) return;
+  const min=Math.max(...sizes)*0.15;
+  const kept=l=>l>=0 && sizes[l]>=min;
+  const src=Float32Array.from(plane);
+  for(let p=0;p<N;p++){
+    const l=lab[p];
+    if(l>=0){ if(!kept(l)) plane[p]=0; continue; }
+    if(src[p]<=0.2) continue;
+    // soft edge pixel: keep only when it borders a kept region
+    const x=p%S, y=(p/S)|0;
+    const near=(x>0&&kept(lab[p-1]))||(x<S-1&&kept(lab[p+1]))||(y>0&&kept(lab[p-S]))||(y<S-1&&kept(lab[p+S]));
+    if(!near) plane[p]=0;
+  }
+}
+
+/* ---------- polish for photos of people ---------- */
+/* square max/min filter (separable), r in pixels; dilate when max=true */
+function morph(bin,S,r,max){
+  const tmp=new Uint8Array(S*S), out=new Uint8Array(S*S);
+  for(let y=0;y<S;y++){ const row=y*S;
+    for(let x=0;x<S;x++){ let v=max?0:1; const a=Math.max(0,x-r), b=Math.min(S-1,x+r);
+      for(let k=a;k<=b;k++){ const s=bin[row+k]; if(max? s : !s){ v=max?1:0; break; } } tmp[row+x]=v; } }
+  for(let x=0;x<S;x++) for(let y=0;y<S;y++){ let v=max?0:1; const a=Math.max(0,y-r), b=Math.min(S-1,y+r);
+      for(let k=a;k<=b;k++){ const s=tmp[k*S+x]; if(max? s : !s){ v=max?1:0; break; } } out[y*S+x]=v; }
+  return out;
+}
+/* fill enclosed gaps (background not reachable from the border) smaller than maxArea */
+function fillSmallHoles(bin,S,maxArea){
+  const N=S*S, seen=new Uint8Array(N), stack=new Int32Array(N);
+  let top=0;
+  const push=p=>{ if(!bin[p] && !seen[p]){ seen[p]=1; stack[top++]=p; } };
+  for(let i=0;i<S;i++){ push(i); push((S-1)*S+i); push(i*S); push(i*S+S-1); }
+  while(top){ const q=stack[--top], x=q%S, y=(q/S)|0;
+    if(x>0) push(q-1); if(x<S-1) push(q+1); if(y>0) push(q-S); if(y<S-1) push(q+S); }
+  // remaining unseen background pixels form holes; measure each and fill the small ones
+  const lab=new Int32Array(N).fill(-1);
+  for(let p=0;p<N;p++){
+    if(bin[p] || seen[p] || lab[p]!==-1) continue;
+    const members=[]; top=0; stack[top++]=p; lab[p]=1;
+    while(top){ const q=stack[--top]; members.push(q); const x=q%S, y=(q/S)|0;
+      for(const nb of [x>0?q-1:-1, x<S-1?q+1:-1, y>0?q-S:-1, y<S-1?q+S:-1])
+        if(nb>=0 && !bin[nb] && !seen[nb] && lab[nb]===-1){ lab[nb]=1; stack[top++]=nb; } }
+    if(members.length<=maxArea) for(const q of members) bin[q]=1;
+  }
+}
+function boxBlur(src,S,r){
+  const tmp=new Float32Array(S*S), out=new Float32Array(S*S), w=2*r+1;
+  for(let y=0;y<S;y++){ let acc=0; const row=y*S;
+    for(let x=-r;x<=r;x++) acc+=src[row+Math.min(S-1,Math.max(0,x))];
+    for(let x=0;x<S;x++){ tmp[row+x]=acc/w; acc+=src[row+Math.min(S-1,x+r+1)]-src[row+Math.max(0,x-r)]; } }
+  for(let x=0;x<S;x++){ let acc=0;
+    for(let y=-r;y<=r;y++) acc+=tmp[Math.min(S-1,Math.max(0,y))*S+x];
+    for(let y=0;y<S;y++){ out[y*S+x]=acc/w; acc+=tmp[Math.min(S-1,y+r+1)*S+x]-tmp[Math.max(0,y-r)*S+x]; } }
+  return out;
+}
+/* push-pull fill: paints pixels where known<0.5 from the surrounding known fabric */
+function pushPullFill(px,known,W,H,region,grain=6){
+  const levels=[]; let w=W, h=H;
+  let C=new Float32Array(w*h*3), A=new Float32Array(w*h);
+  for(let p=0;p<w*h;p++) if(known[p]){ A[p]=1; C[p*3]=px[p*4]; C[p*3+1]=px[p*4+1]; C[p*3+2]=px[p*4+2]; }
+  levels.push({w,h,C,A});
+  while(w>2 && h>2){
+    const nw=Math.ceil(w/2), nh=Math.ceil(h/2), nC=new Float32Array(nw*nh*3), nA=new Float32Array(nw*nh);
+    for(let y=0;y<h;y++) for(let x=0;x<w;x++){ const p=y*w+x, a=A[p]; if(!a) continue; const q=(y>>1)*nw+(x>>1);
+      nA[q]+=a; nC[q*3]+=C[p*3]*a; nC[q*3+1]+=C[p*3+1]*a; nC[q*3+2]+=C[p*3+2]*a; }
+    for(let q=0;q<nw*nh;q++) if(nA[q]){ nC[q*3]/=nA[q]; nC[q*3+1]/=nA[q]; nC[q*3+2]/=nA[q]; nA[q]=Math.min(1,nA[q]); }
+    w=nw; h=nh; C=nC; A=nA; levels.push({w,h,C,A});
+  }
+  for(let l=levels.length-2;l>=0;l--){
+    const f=levels[l], c=levels[l+1];
+    for(let y=0;y<f.h;y++) for(let x=0;x<f.w;x++){ const p=y*f.w+x, a=f.A[p]; if(a>=1) continue;
+      // bilinear sample of the coarser level, so filled areas blend smoothly instead of in blocks
+      const cx=Math.min(c.w-1,Math.max(0,(x+0.5)/2-0.5)), cy=Math.min(c.h-1,Math.max(0,(y+0.5)/2-0.5));
+      const x0=Math.floor(cx), y0=Math.floor(cy), x1=Math.min(c.w-1,x0+1), y1=Math.min(c.h-1,y0+1), fx=cx-x0, fy=cy-y0;
+      const q00=y0*c.w+x0, q10=y0*c.w+x1, q01=y1*c.w+x0, q11=y1*c.w+x1;
+      const w00=(1-fx)*(1-fy), w10=fx*(1-fy), w01=(1-fx)*fy, w11=fx*fy;
+      for(let k=0;k<3;k++){
+        const v=c.C[q00*3+k]*w00+c.C[q10*3+k]*w10+c.C[q01*3+k]*w01+c.C[q11*3+k]*w11;
+        f.C[p*3+k]=f.C[p*3+k]*a+v*(1-a); }
+      f.A[p]=1; }
+  }
+  const L=levels[0];
+  for(let p=0;p<W*H;p++) if(region[p] && !known[p]){
+    const g=(Math.random()-0.5)*grain;   // a little grain so filled areas don't look painted flat
+    px[p*4]=L.C[p*3]+g; px[p*4+1]=L.C[p*3+1]+g; px[p*4+2]=L.C[p*3+2]+g; }
+}
+/* turns the raw garment plane (S×S, 0..1) into a tidy silhouette; returns {soft, orig} at S×S */
+function polishSilhouette(plane,S){
+  const N=S*S, bin=new Uint8Array(N); let area=0;
+  for(let p=0;p<N;p++) if(plane[p]>0.5){ bin[p]=1; area++; }
+  const orig=Uint8Array.from(bin);
+  fillSmallHoles(bin,S,Math.round(area*0.02));
+  const r=Math.max(2,Math.round(S*0.012));
+  let closed=morph(morph(bin,S,r,true),S,r,false);   // close: bridge notches left by hands and hair
+  fillSmallHoles(closed,S,Math.round(area*0.02));
+  const opened=morph(morph(closed,S,2,false),S,2,true);  // open: drop thin slivers and spikes
+  const f=new Float32Array(N); for(let p=0;p<N;p++) f[p]=opened[p];
+  return {soft:boxBlur(f,S,2), orig};
+}
+
+/* cache: per-photo object holding the prepared image and model outputs, so changing category re-composes instantly.
+   returns {blob, cut, model, mode} — mode is "flat", "person", "need-category" */
+async function cleanPhoto(blob, {person=false, category="", cache={}}={}){
+  cache.prep = cache.prep || await prepPhoto(blob);
+  const {W,H,c,px:orig}=cache.prep, n=W*H;
+  let mode = person ? (PERSON_CLASSES[category] ? "person" : (category ? "flat" : "need-category")) : "flat";
+  let alpha=null, model=false, fillKnown=null;
+  if(mode!=="need-category" && !CLEAN.failed){
+    try{
+      if(mode==="person"){
+        const S=MODELS.person.size, N=S*S;
+        cache.person = cache.person || await runModel("person", modelInput(cache.prep,S));
+        const keep=PERSON_CLASSES[category], plane=new Float32Array(N);
+        for(let p=0;p<N;p++){ let v=0; for(const k of keep) v+=cache.person[k*N+p]; plane[p]=v; }
+        keepMainRegions(plane,S);
+        const pol=polishSilhouette(plane,S);
+        const up=upsample(pol.soft,S,W,H); alpha=new Float32Array(n);
+        for(let p=0;p<n;p++) alpha[p]=Math.min(1,Math.max(0,(up[p]-0.3)/0.4));
+        const of=new Float32Array(S*S); for(let p=0;p<S*S;p++) of[p]=pol.orig[p];
+        const ku=upsample(of,S,W,H); fillKnown=new Uint8Array(n);
+        for(let p=0;p<n;p++) fillKnown[p]=ku[p]>0.6?1:0;
+      } else {
+        const S=MODELS.flat.size;
+        if(!cache.flat){
+          const raw=await runModel("flat", modelInput(cache.prep,S));
+          let lo=Infinity, hi=-Infinity; for(const v of raw){ if(v<lo) lo=v; if(v>hi) hi=v; }
+          const span=Math.max(hi-lo,1e-6); cache.flat=raw.map(v=>(v-lo)/span);
+        }
+        const up=upsample(cache.flat,S,W,H); alpha=new Float32Array(n);
+        for(let p=0;p<n;p++) alpha[p]=Math.min(1,Math.max(0,(up[p]-0.3)/0.4));
+      }
+      model=true;
+      let fg=0; for(let p=0;p<n;p++) if(alpha[p]>0.5) fg++;
+      if(fg<0.02*n || fg>0.95*n) alpha=null;
+    }catch(e){ console.warn(e); alpha=null; }
+  }
+  const px=new Uint8ClampedArray(orig);
+  correctColors(px, alpha, n);
+  if(alpha && fillKnown){   // paint the gaps left by hands, arms and hair with the surrounding fabric
+    const region=new Uint8Array(n); for(let p=0;p<n;p++) region[p]=alpha[p]>0.02?1:0;
+    pushPullFill(px, fillKnown, W, H, region);
+  }
+  const id=new ImageData(px,W,H);
+
+  if(!alpha){ const o=mkCanvas(W,H); o.getContext("2d").putImageData(id,0,0); return {blob:await toJpeg(o,0.88), cut:false, model, mode}; }
+
+  // crop to the garment and place it on white with a soft shadow
+  let x0=W,y0=H,x1=0,y1=0;
+  for(let y=0;y<H;y++) for(let x=0;x<W;x++) if(alpha[y*W+x]>0.5){ if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y; }
+  const pad=Math.round(0.01*Math.max(W,H)); x0=Math.max(0,x0-pad); y0=Math.max(0,y0-pad); x1=Math.min(W-1,x1+pad); y1=Math.min(H-1,y1+pad);
+  for(let p=0;p<n;p++) px[p*4+3]=Math.round(alpha[p]*255);
+  const bw=x1-x0+1, bh=y1-y0+1;
+  const cut=mkCanvas(bw,bh); cut.getContext("2d").putImageData(id,-x0,-y0,x0,y0,bw,bh);
+  const OW=900, OH=1200, out=mkCanvas(OW,OH), ox=out.getContext("2d");
+  ox.fillStyle=MILK; ox.fillRect(0,0,OW,OH);
+  const s=Math.min(OW*0.8/bw, OH*0.78/bh), dw=bw*s, dh=bh*s, dx=(OW-dw)/2, dy=(OH-dh)*0.52;
+  const sil=mkCanvas(bw,bh), sl=sil.getContext("2d"); sl.drawImage(cut,0,0); sl.globalCompositeOperation="source-in"; sl.fillStyle="#2a2a2a"; sl.fillRect(0,0,bw,bh);
+  if(typeof ox.filter==="string"){  // soft shadow only where canvas blur is supported
+    ox.filter="blur(16px)"; ox.globalAlpha=0.16; ox.drawImage(sil,dx+6,dy+14,dw,dh); ox.globalAlpha=1; ox.filter="none";
+  }
+  ox.imageSmoothingQuality="high"; ox.drawImage(cut,dx,dy,dw,dh);
+  return {blob:await toJpeg(out,0.9), cut:true, model:true, mode};
+}
+
+/* ---------- color matching ---------- */
+const NEUTRAL = new Set(["black","white","grey","beige","brown","navy"]);
+const GOOD_PAIRS = {
+  "blue|orange":"comp","purple|yellow":"comp","green|pink":"compFresh","blue|yellow":"bright","blue|red":"classic",
+  "blue|pink":"soft","blue|purple":"smooth","blue|green":"smooth","pink|red":"tonal","orange|red":"warmRich",
+  "orange|yellow":"warmSunny","green|yellow":"fresh","pink|purple":"tonal"
+};
+const REL = {
+  en:{comp:"complementary colors, so they make each other stronger",compFresh:"complementary colors, a fresh and lively pair",bright:"a bright, high-contrast pair",
+    classic:"a classic contrast pair",soft:"a soft contrast that feels easy",smooth:"neighbors on the color wheel, so they blend smoothly",
+    tonal:"neighbors on the color wheel, a tonal look",warmRich:"neighbors on the color wheel, warm and rich",warmSunny:"neighbors on the color wheel, warm and sunny",fresh:"neighbors on the color wheel, fresh and natural"},
+  zh:{comp:"是互补色，能互相衬托",compFresh:"是互补色，清新又活泼",bright:"对比鲜明，很亮眼",classic:"是经典的对比配色",soft:"对比柔和，很好驾驭",
+    smooth:"在色环上相邻，过渡自然",tonal:"在色环上相邻，形成同色系层次",warmRich:"在色环上相邻，温暖饱满",warmSunny:"在色环上相邻，温暖明亮",fresh:"在色环上相邻，清新自然"}
+};
+const CLASH = new Set(["green|red","orange|pink","orange|purple"]);
+const pairKey=(a,b)=>[a,b].sort().join("|");
+const cap=s=>LANG==="zh"?s:s[0].toUpperCase()+s.slice(1);
+const CC = {
+  en:{
+    labels:{none:"No colors tagged",clash:"Clashing",busy:"Busy",great:"Great match",bold:"Bold",good:"Good match",calm:"Calm neutrals"},
+    none:()=>"Add colors to these pieces to get a color check.",
+    clash:(a,b)=>`${cap(a)} and ${b} tend to fight each other. Swap one of them for a neutral.`,
+    twoPat:()=>"Two patterned pieces compete for attention. Keep one pattern and make the rest solid.",
+    many:l=>`${cap(l.join(", "))} is a lot of color at once. Two colors plus neutrals is easier to wear.`,
+    pair:(a,b,r)=>`${cap(a)} and ${b} are ${r}. Neutrals around them keep it balanced.`,
+    odd:(a,b)=>`${cap(a)} with ${b} is an unusual pair. It can work if everything else stays neutral.`,
+    patAcc:a=>`A pattern plus a ${a} piece. Fine if the pattern contains some ${a}.`,
+    one:a=>`One ${a} accent on neutrals. Simple and hard to get wrong.`,
+    patNeutral:()=>"One pattern on neutrals lets the pattern be the star.",
+    blackNavy:()=>"All neutrals. Black and navy together can look like a mismatch, so make the contrast clearly on purpose.",
+    blackBrown:()=>"All neutrals. Black with brown works best when the brown is a rich tone, like leather.",
+    neutral:()=>"All neutrals: calm and polished. A colored bag, scarf or shoe would lift it."
+  },
+  zh:{
+    labels:{none:"未标颜色",clash:"撞色冲突",busy:"太花了",great:"很搭",bold:"大胆",good:"不错",calm:"沉稳中性"},
+    none:()=>"给这些单品标注颜色后，就能检查配色。",
+    clash:(a,b)=>`${a}和${b}容易互相冲突，建议把其中一件换成中性色。`,
+    twoPat:()=>"两件图案单品会互相抢眼。保留一件图案，其余选纯色。",
+    many:l=>`${l.join("、")}同时出现，颜色有点多。两种颜色加中性色会更好穿。`,
+    pair:(a,b,r)=>`${a}和${b}${r}，再配上中性色，整体很平衡。`,
+    odd:(a,b)=>`${a}配${b}比较少见，其余单品保持中性色就能驾驭。`,
+    patAcc:a=>`一件图案单品加一件${a}单品，如果图案里带有${a}就很协调。`,
+    one:a=>`中性色上点缀一抹${a}，简单又不容易出错。`,
+    patNeutral:()=>"一件图案单品配中性色，让图案成为焦点。",
+    blackNavy:()=>"全是中性色。黑色和藏青色放在一起容易像穿错了，对比要做得明显、刻意一些。",
+    blackBrown:()=>"全是中性色。黑色配棕色时，棕色选皮革那样饱满的色调最好看。",
+    neutral:()=>"全是中性色，沉稳又利落。加一个有颜色的包、围巾或鞋子会更出彩。"
+  }
+};
+function colorCheck(ids){
+  const L=CC[LANG], cn=colorName;
+  const its=ids.map(byId).filter(Boolean);
+  const tagged=its.filter(i=>(i.colors||[]).length);
+  const all=tagged.flatMap(i=>i.colors);
+  const colors=[...new Set(all)];
+  const r=(level,lab,score,text)=>({level,label:L.labels[lab],score,text,colors});
+  if(!tagged.length) return r("none","none",50,L.none());
+  const accents=[...new Set(all.filter(c=>!NEUTRAL.has(c)&&c!=="pattern"))];
+  const patterns=tagged.filter(i=>i.colors.includes("pattern")).length;
+  for(let a=0;a<accents.length;a++) for(let b=a+1;b<accents.length;b++)
+    if(CLASH.has(pairKey(accents[a],accents[b]))) return r("clash","clash",15,L.clash(cn(accents[a]),cn(accents[b])));
+  if(patterns>=2) return r("bold","busy",40,L.twoPat());
+  if(accents.length>=3) return r("bold","busy",35,L.many(accents.map(cn)));
+  if(accents.length===2){
+    const rel=GOOD_PAIRS[pairKey(...accents)];
+    if(rel) return r("great","great",95,L.pair(cn(accents[0]),cn(accents[1]),REL[LANG][rel]));
+    return r("bold","bold",60,L.odd(cn(accents[0]),cn(accents[1])));
+  }
+  if(accents.length===1){
+    if(patterns) return r("good","good",78,L.patAcc(cn(accents[0])));
+    return r("great","great",90,L.one(cn(accents[0])));
+  }
+  if(patterns) return r("great","great",88,L.patNeutral());
+  const n=new Set(all);
+  if(n.has("black")&&n.has("navy")) return r("good","good",70,L.blackNavy());
+  if(n.has("black")&&n.has("brown")) return r("good","good",72,L.blackBrown());
+  return r("good","calm",76,L.neutral());
+}
+function goesWith(it){
+  const clashCats = (a,b)=> a===b || (ONE_PIECE.has(a)&&(b==="top"||b==="bottom"||ONE_PIECE.has(b))) || (ONE_PIECE.has(b)&&(a==="top"||a==="bottom"));
+  return items.filter(o=>o.id!==it.id && !clashCats(it.category,o.category) && (o.colors||[]).length && (it.colors||[]).length)
+    .map(o=>({o,s:colorCheck([it.id,o.id]).score})).filter(x=>x.s>=76)
+    .sort((a,b)=>b.s-a.s || (a.o.wornCount||0)-(b.o.wornCount||0)).slice(0,10).map(x=>x.o);
+}
+
+/* ---------- render ---------- */
+function applyLang(){
+  document.documentElement.lang = LANG==="zh" ? "zh-CN" : "en";
+  document.title = t("title");
+  $("#h1").textContent = t("title");
+  $("#langBtn").textContent = LANG==="zh" ? "English" : "中文";
+  $("#langBtn").lang = LANG==="zh" ? "en" : "zh";
+  $("#addBtn").textContent = t("add");
+  $("#backupBtn").textContent = t("backup");
+  $("#localBanner").textContent = t("localBanner");
+  $("#removeDemo").textContent = t("removeDemo");
+  $("#tab-closet .tl").textContent = t("tabCloset");
+  $("#tab-mix .tl").textContent = t("tabMix");
+  $("#tab-outfits .tl").textContent = t("tabOutfits");
+}
+function render(){
+  const worn=items.filter(i=>i.wornCount>0).length;
+  $("#sub").textContent = items.length ? t("sub")(items.length,outfits.length,items.length-worn) : (ready ? t("emptySub") : t("loading"));
+  $("#nItems").textContent=items.length; $("#nOutfits").textContent=outfits.length;
+  document.querySelectorAll("nav.tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===S.tab));
+  ["closet","mix","outfits"].forEach(x=>$("#view-"+x).hidden = S.tab!==x);
+  const nDemo=items.filter(i=>i.demo).length;
+  $("#demoBanner").hidden=!nDemo;
+  if(nDemo) $("#demoText").textContent=t("demo")(nDemo);
+  if(SEL.on && SEL.tab!==S.tab) endSelect();
+  if(S.tab==="closet") renderCloset();
+  if(S.tab==="mix") renderMix();
+  if(S.tab==="outfits") renderOutfits();
+  renderSelBar();
+}
+function startSelect(){ SEL.on=true; SEL.tab=S.tab; SEL.ids=new Set(); SEL.armed=false; render(); }
+function endSelect(){ SEL.on=false; SEL.ids=new Set(); SEL.armed=false; }
+function renderSelBar(){
+  const bar=$("#selBar"); bar.hidden=!SEL.on; document.body.classList.toggle("selecting",SEL.on);
+  if(!SEL.on) return;
+  const n=SEL.ids.size;
+  $("#selCount").textContent=t("selectedN")(n);
+  $("#selAll").textContent=t("selectAll"); $("#selDone").textContent=t("selDone");
+  const del=$("#selDelete"); del.disabled=!n||SEL.busy; del.textContent=SEL.armed?t("confirmDeleteN")(n):t("deleteN")(n);
+}
+function toggleSel(id){ SEL.ids.has(id)?SEL.ids.delete(id):SEL.ids.add(id); SEL.armed=false; render(); }
+async function deleteSelected(){
+  const ids=[...SEL.ids], n=ids.length; SEL.busy=true; let done=0, failed=0;
+  const del=$("#selDelete");
+  try{
+    if(SEL.tab==="closet"){
+      const gone=new Set(ids);
+      for(const id of ids){ del.textContent=t("deletingN")(done+1,n); try{ await deleteItem(id); }catch(e){ failed++; gone.delete(id); } done++; }
+      for(const o of outfits.filter(o=>o.itemIds.some(x=>gone.has(x)))){   // keep outfits tidy: drop deleted pieces
+        const left=o.itemIds.filter(x=>!gone.has(x));
+        try{ left.length ? await updateOutfit(o.id,{itemIds:left}) : await deleteOutfit(o.id); }catch(e){}
+      }
+    } else {
+      for(const id of ids){ del.textContent=t("deletingN")(done+1,n); try{ await deleteOutfit(id); }catch(e){ failed++; } done++; }
+    }
+  } finally { SEL.busy=false; }
+  endSelect(); render();
+  toast(failed ? t("delFail") : t("deletedN")(n));
+}
+
+const HANGER = `<svg class="hanger" viewBox="0 0 84 50" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M42 16c0-4 3-6 6-6s5 3 5 5c0 4-4 5-6 7l-5 4"/><path d="M42 26 5 44h74z"/></svg>`;
+function emptyState(msg){
+  return `<div class="empty">${HANGER}<h2>${t("emptyTitle")}</h2><p>${msg}</p>
+    <button class="btn primary" type="button" data-act="add">${t("addFirst")}</button></div>`;
+}
+const dotsHtml = it => `<div class="dots">${(it.colors||[]).map(c=>`<span class="dot" style="background:${COLOR_MAP[c]}" title="${colorName(c)}"></span>`).join("")}</div>`;
+
+function renderCloset(){
+  const v=$("#view-closet");
+  if(!items.length){ v.innerHTML = emptyState(t("emptyCloset")); return; }
+  const counts={}; items.forEach(i=>counts[i.category]=(counts[i.category]||0)+1);
+  const q=S.q.toLowerCase();
+  let list = items.filter(i=>(S.cat==="all"||i.category===S.cat)
+    && (S.color==="all"||(i.colors||[]).includes(S.color))
+    && (!q || [i.name,i.nameZh,i.notes,...(i.colors||[]),...(i.colors||[]).map(c=>COLOR_ZH[c]),catOne(i.category)].join(" ").toLowerCase().includes(q)));
+  if(S.sort==="new") list.sort((a,b)=>(b.addedAt||"").localeCompare(a.addedAt||""));
+  if(S.sort==="least") list.sort((a,b)=>(a.wornCount||0)-(b.wornCount||0) || (a.lastWorn||"").localeCompare(b.lastWorn||""));
+  if(S.sort==="most") list.sort((a,b)=>(b.wornCount||0)-(a.wornCount||0));
+  if(S.sort==="name") list.sort((a,b)=>nameOf(a).localeCompare(nameOf(b),LANG==="zh"?"zh-CN":undefined));
+  const usedColors=COLOR_IDS.filter(c=>items.some(i=>(i.colors||[]).includes(c)));
+  v.innerHTML = `
+    <div class="toolbar">
+      <div class="chips">
+        <button class="chip" type="button" data-cat="all" aria-pressed="${S.cat==="all"}">${t("all")}<span class="n">${items.length}</span></button>
+        ${CAT_IDS.filter(c=>counts[c]).map(c=>`<button class="chip" type="button" data-cat="${c}" aria-pressed="${S.cat===c}">${CAT_PLURAL[LANG][c]}<span class="n">${counts[c]}</span></button>`).join("")}
+      </div>
+    </div>
+    <div class="toolbar">
+      <input class="search" id="q" type="search" placeholder="${t("search")}" value="${esc(S.q)}">
+      <select class="sel" id="colorSel" aria-label="${t("fColors")}">
+        <option value="all">${t("anyColor")}</option>
+        ${usedColors.map(c=>`<option value="${c}" ${S.color===c?"selected":""}>${cap(colorName(c))}</option>`).join("")}
+      </select>
+      <button class="chip" type="button" id="selStart" ${SEL.on?"hidden":""}>${t("select")}</button>
+      <select class="sel" id="sortSel" aria-label="Sort">
+        <option value="new" ${S.sort==="new"?"selected":""}>${t("sortNew")}</option>
+        <option value="least" ${S.sort==="least"?"selected":""}>${t("sortLeast")}</option>
+        <option value="most" ${S.sort==="most"?"selected":""}>${t("sortMost")}</option>
+        <option value="name" ${S.sort==="name"?"selected":""}>${t("sortName")}</option>
+      </select>
+    </div>
+    ${list.length? `<div class="grid">${list.map(cardHtml).join("")}</div>` : `<p class="note">${t("noMatch")}</p>`}`;
+  const qi=$("#q");
+  qi.oninput=e=>{ S.q=e.target.value; const pos=qi.selectionStart; renderCloset(); const n=$("#q"); n.focus(); n.setSelectionRange(pos,pos); };
+  $("#colorSel").onchange=e=>{S.color=e.target.value;renderCloset();};
+  $("#sortSel").onchange=e=>{S.sort=e.target.value;rememberUi();renderCloset();};
+  $("#selStart").onclick=startSelect;
+  SEL.visible=list.map(i=>i.id);
+}
+function cardHtml(i){
+  const fresh = i.addedAt && (Date.now()-new Date(i.addedAt))<7*864e5;
+  const badge = !i.wornCount ? `<span class="badge ${fresh?"new":""}">${fresh?t("badgeNew"):t("badgeUnworn")}</span>` : "";
+  const sel = SEL.on ? ` aria-pressed="${SEL.ids.has(i.id)}"` : "";
+  return `<button class="card" type="button" data-item="${i.id}"${sel}>
+    <div class="ph"><img src="${imgSrc(i)}" alt="${esc(nameOf(i))}" loading="lazy">${backSrc(i)?`<img class="back" src="${backSrc(i)}" alt="" loading="lazy"><span class="badge backtag">${t("hasBack")}</span>`:""}${badge}${SEL.on?`<span class="check" aria-hidden="true">${SEL.ids.has(i.id)?"✓":""}</span>`:""}</div>
+    <div class="meta">
+      <div class="name">${esc(nameOf(i))}</div>
+      <div class="tag">${catOne(i.category)} · ${SEASON_SHORT[LANG][i.season||"all"]} · ${t("worn")(i.wornCount||0)}</div>
+      ${dotsHtml(i)}
+    </div></button>`;
+}
+
+/* ---------- mix & match ---------- */
+function slotPool(slot, season=S.mix.season){
+  return items.filter(i=>slot.cats.includes(i.category) &&
+    (season==="any" || !i.season || i.season==="all" || i.season===season));
+}
+function dressOn(slots=S.mix.slots){ const x=byId(slots.top); return x && ONE_PIECE.has(x.category); }
+function randomSlots(season){
+  const slots={...S.mix.slots};
+  for(const sl of SLOTS){
+    if(S.mix.locks[sl.id]) continue;
+    if(sl.id==="bottom" && dressOn(slots)){ slots.bottom=null; continue; }
+    const pool=slotPool(sl,season);
+    let pick=null;
+    if(pool.length) pick = (!sl.optional || Math.random()<.6) ? pool[Math.floor(Math.random()*pool.length)].id : null;
+    slots[sl.id]=pick;
+  }
+  if(dressOn(slots)) slots.bottom=null;
+  else if(!slots.bottom){ const p=slotPool(SLOTS[2],season); if(p.length) slots.bottom=p[Math.floor(Math.random()*p.length)].id; }
+  return slots;
+}
+function pickSlots(season, preferUnworn){
+  if(!S.mix.smart) return randomSlots(season);
+  const tries=[];
+  for(let n=0;n<80;n++){
+    const s=randomSlots(season); const ids=Object.values(s).filter(Boolean);
+    let sc=colorCheck(ids).score;
+    if(preferUnworn) sc += ids.reduce((a,id)=>a+(byId(id).wornCount?0:4),0);
+    tries.push({s,sc});
+  }
+  const top=Math.max(...tries.map(x=>x.sc));
+  const best=tries.filter(x=>x.sc>=top-6);
+  return best[Math.floor(Math.random()*best.length)].s;
+}
+function shuffle(){ S.mix.slots = pickSlots(S.mix.season); S.mix.flip={}; }
+function step(slotId,dir){
+  const sl=SLOTS.find(s=>s.id===slotId); const pool=slotPool(sl).map(p=>p.id);
+  const opts = sl.optional ? [null,...pool] : pool; if(!opts.length) return;
+  let ix=opts.indexOf(S.mix.slots[slotId]); ix=(ix+dir+opts.length)%opts.length;
+  S.mix.slots[slotId]=opts[ix]; if(S.mix.flip) S.mix.flip[slotId]=false;
+  if(slotId==="top" && dressOn()) S.mix.slots.bottom=null;
+  if(slotId==="top" && !dressOn() && !S.mix.slots.bottom){ const p=slotPool(SLOTS[2]); if(p.length) S.mix.slots.bottom=p[0].id; }
+  renderMix();
+}
+function renderMix(){
+  const v=$("#view-mix");
+  if(!items.length){ v.innerHTML = emptyState(t("emptyMix")); return; }
+  if(!renderMix.started){ shuffle(); renderMix.started=true; }
+  const chosen = SLOTS.map(s=>S.mix.slots[s.id]).filter(Boolean);
+  const cc = colorCheck(chosen);
+  const SL=t("slotLabels");
+  v.innerHTML = todayHtml() + `<div class="mix">
+    <div class="mirror">
+      ${SLOTS.map(sl=>{
+        if(sl.id==="bottom" && dressOn()) return "";
+        const pool=slotPool(sl); const it=byId(S.mix.slots[sl.id]);
+        const none = !pool.length;
+        return `<div class="slot">
+          <button class="arrow" type="button" data-step="${sl.id}" data-dir="-1" aria-label="${t("prev")} ${SL[sl.id]}" ${none?"disabled":""}>‹</button>
+          <div class="frame">
+            ${it?(backSrc(it)?`<button class="imgbtn" type="button" data-flip="${sl.id}" title="${t("flipHint")}"><img src="${S.mix.flip?.[sl.id]?backSrc(it):imgSrc(it)}" alt=""><span class="flip">${S.mix.flip?.[sl.id]?t("kBack"):t("kFront")} ↺</span></button>`:`<img src="${imgSrc(it)}" alt="">`):`<span class="blank">${none?t("noneAdded"):t("skip")}</span>`}
+            <div class="info">
+              <div class="tag">${SL[sl.id]}${sl.optional?" · "+t("optional"):""}</div>
+              <div class="name">${it?esc(nameOf(it)):(none?t("nothingYet"):t("notWearing"))}</div>
+              ${it?dotsHtml(it):""}
+            </div>
+            ${pool.length?`<button class="lock" type="button" data-lock="${sl.id}" aria-pressed="${!!S.mix.locks[sl.id]}">${S.mix.locks[sl.id]?t("locked"):t("lock")}</button>`:""}
+          </div>
+          <button class="arrow" type="button" data-step="${sl.id}" data-dir="1" aria-label="${t("next")} ${SL[sl.id]}" ${none?"disabled":""}>›</button>
+        </div>`;}).join("")}
+    </div>
+    <aside class="side">
+      <h3>${t("thisLook")}</h3>
+      <div class="match">
+        <span class="pill ${cc.level}">${cc.label}</span>
+        ${cc.colors.length?`<div class="palette">${cc.colors.map(c=>`<i style="background:${COLOR_MAP[c]}"></i>`).join("")}</div>`:""}
+        <p>${esc(cc.text)}</p>
+      </div>
+      <label>${t("season")}
+        <select id="seasonSel">
+          <option value="any" ${S.mix.season==="any"?"selected":""}>${t("anySeason")}</option>
+          <option value="aw" ${S.mix.season==="aw"?"selected":""}>${SEASONS[LANG][2][1]}</option>
+          <option value="ss" ${S.mix.season==="ss"?"selected":""}>${SEASONS[LANG][1][1]}</option>
+        </select>
+      </label>
+      <label class="toggle"><input type="checkbox" id="smartTg" ${S.mix.smart?"checked":""}> ${t("onlyMatch")}</label>
+      <button class="btn" type="button" id="shuffleBtn">${t("shuffle")}</button>
+      <p class="note">${t("lockNote")}</p>
+      <label>${t("outfitName")}<input id="outfitName" type="text" placeholder="${t("outfitPh")}"></label>
+      <div class="row">
+        <button class="btn primary" type="button" id="saveOutfit" ${chosen.length<2?"disabled":""}>${t("saveOutfit")}</button>
+        <button class="btn" type="button" id="wearNow" ${chosen.length<1?"disabled":""}>${t("wearToday")}</button>
+      </div>
+      <p class="note">${t("wearNote")}</p>
+    </aside></div>`;
+  $("#seasonSel").onchange=e=>{ S.mix.season=e.target.value; shuffle(); renderMix(); };
+  $("#shuffleBtn").onclick=()=>{ shuffle(); renderMix(); };
+  $("#smartTg").onchange=e=>{ S.mix.smart=e.target.checked; };
+  $("#saveOutfit").onclick=()=>doSaveOutfit(false);
+  $("#wearNow").onclick=()=>doSaveOutfit(true);
+  wireToday();
+}
+async function doSaveOutfit(wear){
+  const ids=SLOTS.map(s=>S.mix.slots[s.id]).filter(Boolean);
+  const name=($("#outfitName")?.value||"").trim() || (S.today.answer?.picked && S.today.answer.title) || t("defaultOutfit")(outfits.length+1);
+  const existing = outfits.find(o=>o.itemIds.length===ids.length && o.itemIds.every(x=>ids.includes(x)));
+  try{
+    if(existing){ if(wear) await markWorn(existing); else { toast(t("alreadySaved")); return; } }
+    else {
+      const data={name,itemIds:ids,createdAt:new Date().toISOString(),wornCount:0,lastWorn:null};
+      if(wear){ data.wornCount=1; data.lastWorn=today(); await wearItems(ids); }
+      await saveOutfit(data);
+    }
+    toast(wear?t("loggedWorn"):t("outfitSaved"));
+  }catch(e){ toast(t("saveFail")); }
+}
+async function wearItems(ids){ for(const id of ids){ const it=byId(id); if(it && it.lastWorn!==today()) await updateItem(id,{wornCount:(it.wornCount||0)+1,lastWorn:today()}); } }
+async function markWorn(o){
+  if(o.lastWorn===today()){ toast(t("alreadyToday")); return; }
+  await wearItems(o.itemIds);
+  await updateOutfit(o.id,{wornCount:(o.wornCount||0)+1,lastWorn:today()});
+}
+
+/* ---------- today ---------- */
+const WEATHER = {cold:{season:"aw",desc:"cold, around 0-8 °C"},rainy:{season:"aw",desc:"rainy and cool"},mild:{season:"any",desc:"mild, around 10-18 °C"},warm:{season:"ss",desc:"warm, above 20 °C"}};
+const WEATHER_L = {en:{cold:"Cold",rainy:"Rainy",mild:"Mild",warm:"Warm"}, zh:{cold:"寒冷",rainy:"下雨",mild:"温和",warm:"温暖"}};
+const OCC_L = {en:{casual:"Casual",work:"Work",evening:"Evening out",date:"Date"}, zh:{casual:"休闲",work:"上班",evening:"晚间外出",date:"约会"}};
+const TIPS = {
+ en:{
+  cold:["Layer a thin knit under your coat so the outfit still works when the coat comes off indoors.","Tights or socks in the same color as your shoes make the legs look longer."],
+  rainy:["Leave suede at home and pick shoes that can handle puddles.","A belted coat keeps the outfit's shape even when you're bundled up."],
+  mild:["Bring a light layer. Mornings and evenings can be much cooler than midday.","Tie a knit over your shoulders: it's a spare layer and a styling detail."],
+  warm:["Linen and cotton breathe better than synthetics on a warm day.","Lighter colors stay cooler in the sun."],
+  casual:["Roll your sleeves or cuffs once to make basics look styled.","A half tuck of the top gives a relaxed look some shape."],
+  work:["A half tuck looks put together without being stiff.","Keep accessories to one statement piece for the office."],
+  evening:["Swap day shoes for something with a little shine.","A darker bag reads more evening than a light one."],
+  date:["Wear the piece you feel most confident in, and build around it.","One soft texture, like knit or silk, makes an outfit feel inviting."]},
+ zh:{
+  cold:["外套里面叠穿一件薄针织衫，进了室内脱掉外套也依然好看。","丝袜或袜子选和鞋子同色，腿会显得更长。"],
+  rainy:["今天别穿麂皮，选一双不怕水的鞋。","系腰带的大衣即使穿得厚，也能保持利落的线条。"],
+  mild:["带一件薄外套，早晚可能比中午凉很多。","把针织衫搭在肩上，既能保暖又是造型亮点。"],
+  warm:["天热时亚麻和棉比化纤更透气。","浅色衣服在阳光下更凉快。"],
+  casual:["把袖口或裤脚卷一折，基础款也会更有型。","上衣前面塞一半进裤腰，休闲中带点精神。"],
+  work:["上衣半塞进裤腰，利落又不显得拘谨。","上班时配饰只留一件亮点就够了。"],
+  evening:["把白天的鞋换成带点光泽的款式。","深色的包比浅色的更有晚间氛围。"],
+  date:["穿上最让你自信的那件，再围绕它来搭配。","加一点柔软的材质，比如针织或丝绸，会显得更亲切。"]}
+};
+const pickOne=a=>a[Math.floor(Math.random()*a.length)];
+function nudgeItem(){
+  const m=new Date().getMonth()+1, season=[4,5,6,7,8].includes(m)?"ss":"aw";
+  let core=items.filter(i=>["top","bottom","dress","set","outerwear","shoes"].includes(i.category));
+  const inSeason=core.filter(i=>!i.season||i.season==="all"||i.season===season);
+  if(inSeason.length) core=inSeason;
+  if(!core.length) return null;
+  const sorted=[...core].sort((a,b)=>(a.wornCount?1:0)-(b.wornCount?1:0) || (a.lastWorn||"").localeCompare(b.lastWorn||"") || a.id.localeCompare(b.id));
+  const day=Math.floor(Date.now()/864e5);
+  return sorted[day % Math.min(5,sorted.length)];
+}
+function todayHtml(){
+  const n=nudgeItem(); const a=S.today.answer;
+  const nm = n ? (LANG==="zh" ? nameOf(n) : nameOf(n).toLowerCase()) : "";
+  return `<div class="today">
+    <h3>${t("todayTitle")}</h3>
+    ${n?`<button class="nudge" type="button" data-style="${n.id}"><img src="${imgSrc(n)}" alt=""><span><b>${t("nudgeLabel")}</b> ${esc(n.wornCount?t("nudgeSince")(nm,fmtDate(n.lastWorn)):t("nudgeNever")(nm))}</span></button>`:""}
+    <div class="opts">
+      <div><span class="tag">${t("weather")}</span><div class="chips">${Object.keys(WEATHER).map(k=>`<button class="chip" type="button" data-weather="${k}" aria-pressed="${S.today.weather===k}">${WEATHER_L[LANG][k]}</button>`).join("")}</div></div>
+      <div><span class="tag">${t("occasion")}</span><div class="chips">${Object.keys(OCC_L.en).map(k=>`<button class="chip" type="button" data-occ="${k}" aria-pressed="${S.today.occasion===k}">${OCC_L[LANG][k]}</button>`).join("")}</div></div>
+    </div>
+    <div class="row"><button class="btn primary" type="button" id="suggestBtn" ${S.today.busy?"disabled":""}>${S.today.busy?t("thinking"):(sample?t("suggestClaude"):t("suggest"))}</button></div>
+    ${a?`<div class="answer"><h4>${esc(a.title)}</h4><p>${esc(a.why)}</p>${a.tip?`<p class="tip"><b>${t("tip")}</b> ${esc(a.tip)}</p>`:""}${a.note?`<p class="tip">${esc(a.note)}</p>`:""}</div>`:""}
+  </div>`;
+}
+function wireToday(){
+  document.querySelectorAll("[data-weather]").forEach(b=>b.onclick=()=>{ S.today.weather=b.dataset.weather; renderMix(); });
+  document.querySelectorAll("[data-occ]").forEach(b=>b.onclick=()=>{ S.today.occasion=b.dataset.occ; renderMix(); });
+  $("#suggestBtn").onclick=suggest;
+}
+function styleAround(id){
+  const it=byId(id); if(!it) return;
+  const slot = ONE_PIECE.has(it.category)?"top":it.category;
+  Object.keys(S.mix.locks).forEach(k=>S.mix.locks[k]=false);
+  S.mix.slots[slot]=id; S.mix.locks[slot]=true; renderMix.started=true; shuffle();
+  S.today.answer=null; S.tab="mix"; rememberUi(); render();
+}
+function quickPick(note){
+  const w=WEATHER[S.today.weather];
+  Object.keys(S.mix.locks).forEach(k=>S.mix.locks[k]=false);
+  const smart=S.mix.smart; S.mix.smart=true;
+  S.mix.slots=pickSlots(w.season,true); S.mix.smart=smart;
+  const cc=colorCheck(Object.values(S.mix.slots).filter(Boolean));
+  S.today.answer={title:t("quickTitle")(WEATHER_L[LANG][S.today.weather],OCC_L[LANG][S.today.occasion]),why:cc.text,
+    tip:pickOne([...TIPS[LANG][S.today.weather],...TIPS[LANG][S.today.occasion]]),note};
+}
+async function suggest(){
+  const has=c=>items.some(i=>i.category===c);
+  if(!(has("top")||has("dress")||has("set")) || !has("shoes")){ S.today.answer={title:t("needMore"),why:t("needMoreWhy"),tip:""}; renderMix(); return; }
+  if(!sample){ quickPick(); renderMix(); return; }
+  S.today.busy=true; renderMix();
+  const w=WEATHER[S.today.weather];
+  const wardrobe=items.map(i=>({id:i.id,name:i.name||i.nameZh||i.category,category:i.category,colors:i.colors||[],season:i.season||"all",timesWorn:i.wornCount||0,lastWorn:i.lastWorn||null,notes:(i.notes||"").slice(0,120)}));
+  const recent=outfits.filter(o=>o.lastWorn && (Date.now()-new Date(o.lastWorn+"T12:00:00"))<8*864e5).map(o=>o.itemIds);
+  const langLine = LANG==="zh" ? "Write title, why and tip in Simplified Chinese." : "Write title, why and tip in English.";
+  const prompt=`You are a warm, practical personal stylist. Pick one outfit from the wardrobe below.
+
+Today: ${new Date().toDateString()}. Weather: ${w.desc}. Occasion: ${OCC_L.en[S.today.occasion]}.
+
+Wardrobe (JSON, use only these ids):
+${JSON.stringify(wardrobe)}
+
+Outfits worn in the last week (avoid repeating them): ${JSON.stringify(recent)}
+
+Rules:
+- Slots: outerwear (category "outerwear"), top (category "top", "dress" or "set"), bottom (category "bottom"; null when top is a dress or a set, since a set is a matching top and bottom worn together), shoes, bag, accessory. Optional slots (outerwear, bag, accessory) may be null. Use null when nothing fits.
+- Respect weather: cold or rainy days need outerwear if any exists and favor "aw" or "all" season pieces; warm days favor "ss" or "all".
+- Colors should harmonize: neutrals (black, white, grey, beige, brown, navy) with at most one or two accent colors; avoid red+green, orange+pink, orange+purple; at most one patterned piece.
+- Prefer pieces with fewer wears, so forgotten clothes get used, as long as the outfit still looks good.
+- ${langLine} Refer to pieces by a natural description, never by id.
+
+Reply with JSON only:
+{"title": "short outfit name, max 5 words", "slots": {"outerwear": id|null, "top": id, "bottom": id|null, "shoes": id|null, "bag": id|null, "accessory": id|null}, "why": "1-2 friendly sentences on why it works, mentioning the colors", "tip": "one short practical styling tip for today"}`;
+  try{
+    const a=await sample.json(prompt,{modelTier:"default",cache:false});
+    const slots={};
+    for(const sl of SLOTS){ const id=a?.slots?.[sl.id]; const it=byId(id); slots[sl.id]= it && sl.cats.includes(it.category) ? id : null; }
+    if(dressOn(slots)) slots.bottom=null;
+    if(!slots.top) throw {code:"bad_answer"};
+    Object.keys(S.mix.locks).forEach(k=>S.mix.locks[k]=false);
+    S.mix.slots=slots; renderMix.started=true;
+    S.today.answer={title:String(a.title||t("todayTitle")),why:String(a.why||""),tip:String(a.tip||""),picked:true};
+  }catch(e){
+    quickPick(e?.code==="rate_limited" ? t("busyClaude") : e?.code==="not_granted" ? t("offClaude") : t("failClaude"));
+  }
+  S.today.busy=false; renderMix();
+}
+
+/* ---------- outfits ---------- */
+function renderOutfits(){
+  const v=$("#view-outfits");
+  if(!outfits.length){ v.innerHTML = `<div class="empty">${HANGER}<h2>${t("noOutfitsTitle")}</h2><p>${t("noOutfits")}</p><button class="btn" type="button" data-goto="mix">${t("goMix")}</button></div>`; return; }
+  const list=[...outfits].sort((a,b)=>(b.lastWorn||b.createdAt||"").localeCompare(a.lastWorn||a.createdAt||""));
+  SEL.visible=list.map(o=>o.id);
+  v.innerHTML = `${SEL.on?"":`<div class="toolbar"><button class="chip" type="button" id="selStartO">${t("select")}</button></div>`}<div class="ogrid">${list.map(o=>{
+    const its=o.itemIds.map(byId).filter(Boolean);
+    const cells=its.slice(0,6).map(i=>`<img src="${imgSrc(i)}" alt="" loading="lazy">`);
+    while(cells.length<3) cells.push("<span></span>");
+    const cc=colorCheck(o.itemIds);
+    const title = LANG==="zh" ? (o.nameZh||o.name) : (o.name||o.nameZh);
+    if(SEL.on) return `<button class="ocard" type="button" data-osel="${o.id}" aria-pressed="${SEL.ids.has(o.id)}">
+      <span class="check" aria-hidden="true">${SEL.ids.has(o.id)?"✓":""}</span>
+      <div class="collage">${cells.join("")}</div>
+      <div style="display:grid;gap:4px"><h4>${esc(title)}</h4><div class="tag">${t("pieces")(its.length)}</div></div></button>`;
+    return `<div class="ocard">
+      <div class="collage">${cells.join("")}</div>
+      <div style="display:grid;gap:4px"><h4>${esc(title)}</h4>
+      <span class="pill ${cc.level}">${cc.label}</span>
+      <div class="tag">${t("pieces")(its.length)} · ${t("worn")(o.wornCount||0)}${o.lastWorn?" · "+t("last")(fmtDate(o.lastWorn)):""}</div></div>
+      <div class="row">
+        <button class="btn" type="button" data-wear="${o.id}">${t("wearToday")}</button>
+        <button class="btn ghost" type="button" data-load="${o.id}">${t("editMix")}</button>
+        <button class="btn ghost" type="button" data-delout="${o.id}">${t("del")}</button>
+      </div></div>`;}).join("")}</div>`;
+  $("#selStartO")?.addEventListener("click",startSelect);
+}
+
+/* ---------- sheets ---------- */
+function openSheet(html, onMount, opts={}){
+  const host=$("#sheetHost");
+  host.innerHTML=`<div class="scrim" id="scrim" ${opts.sticky?'data-sticky="1"':""}><div class="sheet" role="dialog" aria-modal="true">${html}</div></div>`;
+  if(!opts.sticky) $("#scrim").addEventListener("click",e=>{ if(e.target.id==="scrim") closeSheet(); });
+  host.querySelector(".x")?.addEventListener("click",closeSheet);
+  onMount && onMount(host.querySelector(".sheet"));
+}
+function closeSheet(){ $("#sheetHost").innerHTML=""; closeSheet.onClose && closeSheet.onClose(); closeSheet.onClose=null; }
+document.addEventListener("keydown",e=>{ if(e.key==="Escape" && $("#scrim") && !$("#scrim").dataset.sticky) closeSheet(); });
+
+function tagFields(d){
+  return `
+    <label class="field"><span>${t("fName")}</span><input id="f-name" type="text" value="${esc(d[nameField()])}" placeholder="${t("fNamePh")}"></label>
+    <div class="field"><span>${t("fCat")}</span><div class="chips" id="f-cat">
+      ${CAT_IDS.map(c=>`<button class="chip" type="button" data-v="${c}" aria-pressed="${d.category===c}">${catOne(c)}</button>`).join("")}</div></div>
+    <div class="field"><span>${t("fColors")}</span><div class="swatches" id="f-col">
+      ${COLORS.map(([n,c])=>`<button class="sw" type="button" data-v="${n}" title="${colorName(n)}" aria-label="${colorName(n)}" aria-pressed="${(d.colors||[]).includes(n)}" style="background:${c}"></button>`).join("")}</div></div>
+    <div class="field"><span>${t("fSeason")}</span><div class="chips" id="f-sea">
+      ${SEASONS[LANG].map(([v,l])=>`<button class="chip" type="button" data-v="${v}" aria-pressed="${(d.season||"all")===v}">${l}</button>`).join("")}</div></div>
+    <label class="field"><span>${t("fNotes")}</span><textarea id="f-notes" rows="2" placeholder="${t("fNotesPh")}">${esc(d.notes)}</textarea></label>`;
+}
+function wireTagFields(root,d,onEdit){
+  const touched=()=>{ d._edited=true; onEdit&&onEdit(); };
+  root.querySelectorAll("#f-cat .chip").forEach(b=>b.onclick=()=>{ d.category=b.dataset.v; root.querySelectorAll("#f-cat .chip").forEach(x=>x.setAttribute("aria-pressed",x===b)); touched(); });
+  root.querySelectorAll("#f-sea .chip").forEach(b=>b.onclick=()=>{ d.season=b.dataset.v; root.querySelectorAll("#f-sea .chip").forEach(x=>x.setAttribute("aria-pressed",x===b)); touched(); });
+  root.querySelectorAll("#f-col .sw").forEach(b=>b.onclick=()=>{ const v=b.dataset.v; d.colors=d.colors||[];
+    d.colors = d.colors.includes(v)? d.colors.filter(x=>x!==v) : [...d.colors,v]; b.setAttribute("aria-pressed",d.colors.includes(v)); touched(); });
+  root.querySelector("#f-name").oninput=e=>{ d[nameField()]=e.target.value; touched(); };
+  root.querySelector("#f-notes").oninput=e=>{ d.notes=e.target.value; touched(); };
+}
+function detectHtml(state){
+  if(state==="busy") return `<div class="detect" role="status"><span class="spin" aria-hidden="true"></span>${t("detecting")}</div>`;
+  if(state==="done") return `<div class="detect" role="status">✦ ${t("detected")}</div>`;
+  if(state==="fail") return `<div class="detect fail" role="status">${t("detectFail")}</div>`;
+  if(state==="off") return `<div class="detect fail" role="status">${t("detectOff")}</div>`;
+  return "";
+}
+function mergeDetected(d, found){
+  for(const k of ["category","colors","season","name","nameZh","notes"]) if(found[k]!==undefined && (k!=="notes" || !d.notes)) d[k]=found[k];
+}
+
+/* add flow: one photo at a time; each photo is recognized and cleaned up in the background */
+function cleanStatusHtml(state, person, category){
+  const p = person && PERSON_CLASSES[category];
+  if(state==="busy"){
+    const first = p ? !CLEAN.loaded.person : !CLEAN.loaded.flat;
+    return `<div class="detect" role="status"><span class="spin" aria-hidden="true"></span>${first ? (p?t("cleanFirstPerson"):t("cleanFirst")) : (p?t("cleaningPerson"):t("cleaning"))}</div>`;
+  }
+  if(state==="done") return `<div class="detect" role="status">✦ ${p?t("cleanedPerson"):t("cleaned")}</div>`
+    + (person && !PERSON_CLASSES[category] ? `<div class="detect fail" role="status">${t("personNoCls")}</div>` : "");
+  if(state==="nocut") return `<div class="detect fail" role="status">${t("cleanedNoCut")}</div>`;
+  if(state==="needcat") return `<div class="detect fail" role="status">${t("personNeedCat")}</div>`;
+  if(state==="fail") return `<div class="detect fail" role="status">${t("cleanFail")}</div>`;
+  return "";
+}
+/* runs (or re-runs) the clean-up for a photo record r = {file, person, d:{category}, cache, gen, ...} */
+function recleanRecord(r, onDone){
+  const gen = r.gen = (r.gen||0)+1;
+  r.cl="busy"; onDone && onDone();
+  r.cleanPromise = (async()=>{
+    try{
+      const res=await cleanPhoto(r.file,{person:r.person, category:r.d.category, cache:r.cache});
+      if(gen!==r.gen) return;
+      if(res.mode==="need-category"){ r.cl="needcat"; }
+      else{
+        if(r.cleanUrl) URL.revokeObjectURL(r.cleanUrl);
+        r.clean=res.blob; r.cleanUrl=URL.createObjectURL(res.blob);
+        r.cl = res.cut ? "done" : (res.model ? "nocut" : "fail");
+      }
+    }catch(e){ if(gen===r.gen) r.cl="fail"; }
+    if(gen===r.gen) onDone && onDone();
+  })();
+  return r.cleanPromise;
+}
+async function startAdd(files){
+  const auto = !!(sample && canSeeImages);
+  const queue=[...files].filter(f=>f.type.startsWith("image/")).map(f=>({file:f,url:URL.createObjectURL(f),
+    det: auto ? "wait" : (sample ? "off" : ""), cl:"busy", clean:null, cleanUrl:null, useOriginal:false, person:false, cache:{},
+    d:{name:"",nameZh:"",category:"",colors:[],season:"all",notes:""}}));
+  if(!queue.length) return;
+  let ix=0, open=true;
+  const preview = q => (!q.useOriginal && q.cleanUrl && q.cl!=="needcat") ? q.cleanUrl : q.url;
+  const statusHtml = q => cleanStatusHtml(q.cl, q.person, q.d.category) + (q.det==="wait" ? "" : detectHtml(q.det))
+    + `<label class="toggle"><input type="checkbox" id="personTg" ${q.person?"checked":""}> ${t("personToggle")}</label>`
+    + (q.clean && q.cl!=="busy" && q.cl!=="needcat" ? `<label class="toggle"><input type="checkbox" id="useOrig" ${q.useOriginal?"checked":""}> ${t("useOriginal")}</label>` : "")
+    + (q.cl!=="busy" ? `<div><button class="chip" type="button" id="logoQ">${t("removeLogo")}</button></div>` : "");
+  const wireStatus = (root,q) => {
+    const tg=root.querySelector("#useOrig");
+    if(tg) tg.onchange=e=>{ q.useOriginal=e.target.checked; const pv=root.querySelector(".pv"); if(pv) pv.src=preview(q); };
+    const lq=root.querySelector("#logoQ");
+    if(lq) lq.onclick=()=>{
+      const src=(!q.useOriginal && q.clean && q.cl!=="needcat") ? q.clean : q.file;
+      openLogoEditor(src, blob=>{
+        if(blob){ if(q.cleanUrl) URL.revokeObjectURL(q.cleanUrl); q.clean=blob; q.cleanUrl=URL.createObjectURL(blob); q.useOriginal=false; if(q.cl==="needcat"||q.cl==="fail") q.cl="nocut"; q.gen=(q.gen||0)+1; }
+        show();
+      });
+    };
+    const pt=root.querySelector("#personTg");
+    if(pt) pt.onchange=e=>{ q.person=e.target.checked; q.personSetByUser=true; recleanRecord(q,()=>refresh(q,true)); };
+  };
+  const show=()=>{
+    const q=queue[ix];
+    const remaining=queue.filter(x=>!x.skip).length;
+    openSheet(`<div class="head"><h2>${t("tagTitle")}</h2><button class="x" type="button" aria-label="${t("close")}">×</button></div>
+      <div class="queue-nav"><span>${t("photoOf")(ix+1,queue.length)}</span><span>${!auto && queue.length>1?t("carry"):""}</span></div>
+      <div class="edit-item"><img class="pv" src="${preview(q)}" alt="">
+        <div class="field" style="gap:14px"><div id="statusBox" style="display:grid;gap:8px">${statusHtml(q)}</div>
+          ${ix>0?`<label class="toggle"><input type="checkbox" id="backPrev" ${q.backOf?"checked":""}> ${t("backOfPrev")}</label>`:""}
+          ${q.backOf?`<p class="note">${t("backOfPrevNote")}</p>`:tagFields(q.d)}</div></div>
+      <p class="note" id="addErr" hidden></p>
+      <div class="row" style="justify-content:space-between">
+        <button class="btn ghost" type="button" id="prevQ" ${ix?"":"disabled"}>${t("back")}</button>
+        <div class="row">
+          <button class="btn ghost" type="button" id="skipQ">${t("skipPhoto")}</button>
+          <button class="btn primary" type="button" id="nextQ">${ix<queue.length-1?t("nextPhoto"):t("addN")(remaining)}</button>
+        </div></div>`, root=>{
+      let lastCat=q.d.category;
+      const bp=root.querySelector("#backPrev");
+      if(bp) bp.onchange=e=>{ q.backOf=e.target.checked;
+        if(q.backOf){ const prev=queue.slice(0,ix).reverse().find(x=>!x.backOf&&!x.skip); if(prev){ q.d.category=prev.d.category; if(prev.person!==q.person && !q.personSetByUser){ q.person=prev.person; } recleanRecord(q,()=>refresh(q,true)); } }
+        show(); };
+      if(!q.backOf) wireTagFields(root,q.d,()=>{ if(q.d.category!==lastCat){ lastCat=q.d.category; if(q.person) recleanRecord(q,()=>refresh(q,true)); } });
+      wireStatus(root,q);
+      root.querySelector("#prevQ").onclick=()=>{ ix--; show(); };
+      root.querySelector("#skipQ").onclick=()=>{ q.skip=true; advance(); };
+      root.querySelector("#nextQ").onclick=()=>{
+        if(!q.backOf && !q.d.category){ const e=root.querySelector("#addErr"); e.hidden=false; e.textContent=t("pickCat"); return; }
+        q.skip=false; advance();
+      };
+    });
+    closeSheet.onClose=()=>{ open=false; };
+  };
+  // statusOnly: only patch the picture and status lines (keeps what the person is typing)
+  const refresh=(q,statusOnly)=>{
+    if(!open || queue[ix]!==q) return;
+    if(!statusOnly && !q.d._edited){ show(); return; }
+    const root=document.querySelector(".sheet"); if(!root) return;
+    const pv=root.querySelector(".pv"); if(pv) pv.src=preview(q);
+    const sb=root.querySelector("#statusBox"); if(sb){ sb.innerHTML=statusHtml(q); wireStatus(root,q); }
+  };
+  const advance=()=>{
+    if(ix<queue.length-1){
+      const prev=queue[ix].d; ix++; const n=queue[ix];
+      if(!auto && !n.d.category && !n.seen){ n.d.category=prev.category; n.d.season=prev.season; }
+      n.seen=true; show();
+    } else upload();
+  };
+  const upload=async()=>{
+    open=false;
+    const todo=queue.filter(q=>!q.skip && (q.d.category || q.backOf));
+    openSheet(`<div class="head"><h2>${t("adding")}</h2></div><div class="progress"><i id="bar"></i></div><p class="note" id="upMsg">${t("ofN")(0,todo.length)}</p>`);
+    let done=0, failed=0, lastId=null;
+    for(const q of todo){
+      try{
+        if(!q.useOriginal && q.cleanPromise && q.cl==="busy"){ const m=$("#upMsg"); if(m) m.textContent=t("cleanWait"); await q.cleanPromise; }
+        const blob = (!q.useOriginal && q.clean && q.cl!=="needcat") ? q.clean : await shrink(q.file);
+        if(q.backOf){
+          if(!lastId) throw new Error("no previous piece");
+          await addPhoto(lastId, blob, "back"); describeBack(lastId, q.file);
+        } else lastId = await saveItem({name:q.d.name.trim(),nameZh:(q.d.nameZh||"").trim(),category:q.d.category,colors:q.d.colors,season:q.d.season,notes:q.d.notes.trim(),
+          onPerson:!!q.person, addedAt:new Date().toISOString(),wornCount:0,lastWorn:null}, blob);
+      }catch(e){ failed++; if(!q.backOf) lastId=null; }
+      done++; const bar=$("#bar"); if(bar) bar.style.width=(done/todo.length*100)+"%";
+      const m=$("#upMsg"); if(m) m.textContent=t("ofN")(done,todo.length);
+    }
+    queue.forEach(q=>{ URL.revokeObjectURL(q.url); if(q.cleanUrl) URL.revokeObjectURL(q.cleanUrl); });
+    closeSheet.onClose=null; closeSheet();
+    toast(failed? t("addedSome")(todo.length-failed,failed) : t("addedN")(todo.length));
+    S.tab="closet"; render();
+  };
+  show();
+
+  // background pipeline: Claude looks at each photo first (type, colors, and whether someone is wearing it),
+  // then the photo is cleaned with the right cut-out. Cleaning runs one photo at a time.
+  if(auto){
+    let next=0;
+    const worker=async()=>{
+      while(next<queue.length){
+        const q=queue[next++];
+        q.det="busy"; refresh(q,true);
+        q.detPromise=(async()=>{
+          try{ const found=await identify(q.file);
+            if(!q.d._edited) mergeDetected(q.d,found);
+            if(!q.personSetByUser) q.person=!!found.onPerson;
+            q.det = found.category ? "done" : "fail"; }
+          catch(e){ q.det = e?.code==="not_granted" ? "off" : "fail"; }
+        })();
+        await q.detPromise; refresh(q);
+      }
+    };
+    worker(); worker();
+  }
+  (async()=>{
+    for(const q of queue){
+      if(auto){ while(!q.detPromise) await new Promise(r=>setTimeout(r,100)); await q.detPromise; }
+      if(q.gen) { await q.cleanPromise; continue; }   // already started by a toggle
+      await recleanRecord(q,()=>refresh(q,true));
+    }
+  })();
+}
+
+function openItem(id){
+  const it=byId(id); if(!it) return;
+  const d={name:it.name||"",nameZh:it.nameZh||"",category:it.category,colors:[...(it.colors||[])],season:it.season||"all",notes:it.notes||""};
+  let det="", cl="", person=!!it.onPerson, view=0, photoBusy=false, pendingKind="back";
+  const inOutfits=outfits.filter(o=>o.itemIds.includes(id));
+  const canClean = !it.demo && !local && assets;
+  const canPhotos = !!(assets || local);
+  const KIND={front:"kFront",back:"kBack",detail:"kDetail"};
+  const draw=()=>{
+    const cur=byId(id)||it;
+    const views=[{src:imgSrc(cur),kind:"front",main:true}, ...extraPhotos(cur).map(ph=>({src:blobSrc(ph.id),kind:ph.kind,id:ph.id}))];
+    if(view>=views.length) view=0;
+    const v=views[view];
+    openSheet(`<div class="head"><h2>${esc(nameOf(cur))}</h2><button class="x" type="button" aria-label="${t("close")}">×</button></div>
+    <div class="edit-item"><div class="pvwrap"><img class="pv" src="${v.src}" alt="">
+        ${views.length>1?`<div class="gallery" role="group" aria-label="${t("photos")}">${views.map((x,i)=>`<button type="button" data-view="${i}" aria-pressed="${i===view}"><img src="${x.src}" alt=""><small>${t(KIND[x.kind]||"kDetail")}</small></button>`).join("")}</div>`:""}
+        ${canPhotos?`<div class="row">
+          ${photoBusy?`<span class="note"><span class="spin" style="display:inline-block;vertical-align:-2px"></span> ${t("addingPhoto")}</span>`:`
+          ${extraPhotos(cur).some(ph=>ph.kind==="back")?"":`<button class="chip" type="button" id="addBack">${t("addBack")}</button>`}
+          <button class="chip" type="button" id="addDetail">${t("addDetail")}</button>`}
+          ${!photoBusy?`<button class="chip" type="button" id="logoIt">${t("removeLogo")}</button>`:""}
+          ${!v.main&&!photoBusy?`<button class="chip" type="button" id="setMain">${t("setMain")}</button><button class="chip" type="button" id="rmPhoto">${t("removePhoto")}</button>`:""}
+          <input type="file" id="morePhoto" accept="image/*" hidden></div>`:""}
+      </div>
+      <div class="field" style="gap:14px">
+        <div class="stats"><span>${t("wornN")(cur.wornCount||0)}</span><span>${cur.lastWorn?t("lastD")(fmtDate(cur.lastWorn)):t("never")}</span><span>${t("inOutfits")(inOutfits.length)}</span></div>
+        ${cleanStatusHtml(cl, person, d.category)}${detectHtml(det)}
+        ${tagFields(d)}</div></div>
+    ${(()=>{ const g=goesWith(cur);
+      if(!(cur.colors||[]).length) return `<p class="note">${t("tagColorsFirst")}</p>`;
+      if(!g.length) return `<p class="note">${t("noColorMatch")}</p>`;
+      return `<div class="field"><span>${t("goesWith")}</span><div class="goes">${g.map(o=>`<button type="button" data-goes="${o.id}"><img src="${imgSrc(o)}" alt=""><small>${esc(nameOf(o))}</small></button>`).join("")}</div></div>`; })()}
+    ${canClean?`<label class="toggle"><input type="checkbox" id="personIt" ${person?"checked":""}> ${t("personToggle")}</label>`:""}
+    <div class="row" style="justify-content:space-between">
+      <button class="btn danger" type="button" id="delIt">${t("del")}</button>
+      <div class="row">
+        ${canClean?`<button class="btn ghost" type="button" id="cleanIt" ${cl==="busy"?"disabled":""}>${t("cleanUp")}</button>`:""}
+        ${sample&&canSeeImages&&!cur.demo?`<button class="btn ghost" type="button" id="reId" ${det==="busy"?"disabled":""}>${t("reidentify")}</button>`:""}
+        <button class="btn" type="button" id="styleIt">${t("styleThis")}</button>
+        <button class="btn primary" type="button" id="saveIt">${t("saveChanges")}</button></div>
+    </div>`, root=>{
+      wireTagFields(root,d);
+      root.querySelector("#saveIt").onclick=async()=>{ try{ const {_edited,...clean}=d; await updateItem(id,{...clean,name:d.name.trim(),nameZh:d.nameZh.trim(),notes:d.notes.trim()}); closeSheet(); toast(t("saved")); }catch(e){ toast(t("saveFailShort")); } };
+      root.querySelector("#styleIt").onclick=()=>{ closeSheet(); styleAround(id); };
+      root.querySelectorAll("[data-goes]").forEach(b=>b.onclick=()=>openItem(b.dataset.goes));
+      const pi=root.querySelector("#personIt"); if(pi) pi.onchange=e=>{ person=e.target.checked; };
+      root.querySelectorAll("[data-view]").forEach(b=>b.onclick=()=>{ view=+b.dataset.view; draw(); });
+      const mp=root.querySelector("#morePhoto");
+      const pick=kind=>{ pendingKind=kind; mp.click(); };
+      root.querySelector("#addBack")?.addEventListener("click",()=>pick("back"));
+      root.querySelector("#addDetail")?.addEventListener("click",()=>pick("detail"));
+      if(mp) mp.onchange=async e=>{
+        const f=e.target.files&&e.target.files[0]; e.target.value=""; if(!f) return;
+        photoBusy=true; draw();
+        try{
+          let blob;
+          try{ const r=await cleanPhoto(f,{person, category:d.category}); blob = (r.model && r.mode!=="need-category") ? r.blob : await shrink(f); }
+          catch(err){ blob=await shrink(f); }
+          await addPhoto(id, blob, pendingKind);
+          view=extraPhotos(byId(id)||it).length;
+          toast(t("photoAdded"));
+          if(pendingKind==="back") describeBack(id, f).then(()=>{ const n=(byId(id)||{}).notes; if(n!==undefined && !d._edited) d.notes=n; if($("#scrim")) draw(); });
+        }catch(err){ toast(t("photoFail")); }
+        photoBusy=false; if($("#scrim")) draw();
+      };
+      root.querySelector("#logoIt")?.addEventListener("click",async()=>{
+        let src; try{ src=await (await fetch(v.src)).blob(); }catch(e){ toast(t("photoFail")); return; }
+        openLogoEditor(src, async blob=>{
+          if(blob){
+            photoBusy=true; draw();
+            try{
+              const c=byId(id)||it;
+              if(local){ const u=URL.createObjectURL(blob);
+                if(v.main) await updateItem(id,{localUrl:u}); else await updateItem(id,{photos:extraPhotos(c).map(ph=>ph.id===v.id?{...ph,id:u}:ph)}); }
+              else { const up=await assets.upload(blob);
+                if(v.main){ await updateItem(id,{assetId:up.id}); try{ await assets.delete(c.assetId); }catch(e){} }
+                else { await updateItem(id,{photos:extraPhotos(c).map(ph=>ph.id===v.id?{...ph,id:up.id}:ph)}); try{ await assets.delete(v.id); }catch(e){} } }
+              toast(t("logoSaved"));
+            }catch(e){ toast(t("saveFailShort")); }
+            photoBusy=false;
+          }
+          draw();
+        });
+      });
+      root.querySelector("#setMain")?.addEventListener("click",async()=>{
+        const c=byId(id)||it, others=extraPhotos(c).filter(ph=>ph.id!==v.id);
+        try{
+          if(local) await updateItem(id,{localUrl:v.id, photos:[{id:c.localUrl,kind:"front"},...others]});
+          else await updateItem(id,{assetId:v.id, photos:[{id:c.assetId,kind:"front"},...others]});
+          view=0; draw();
+        }catch(err){ toast(t("saveFailShort")); }
+      });
+      root.querySelector("#rmPhoto")?.addEventListener("click",async e=>{
+        const b=e.currentTarget;
+        if(!b.dataset.armed){ b.dataset.armed="1"; b.textContent=t("tapDel"); return; }
+        const c=byId(id)||it;
+        try{ await updateItem(id,{photos:extraPhotos(c).filter(ph=>ph.id!==v.id)}); if(!local&&assets){ try{ await assets.delete(v.id); }catch(err){} } view=0; draw(); }
+        catch(err){ toast(t("delFail")); }
+      });
+      const re=root.querySelector("#reId");
+      if(re) re.onclick=async()=>{
+        det="busy"; draw();
+        try{ const r=await fetch(imgSrc(byId(id)||it)); const blob=await r.blob(); const found=await identify(blob); mergeDetected(d,found); d.notes = found.notes || d.notes; det = found.category?"done":"fail"; }
+        catch(e){ det = e?.code==="not_granted" ? "off" : "fail"; }
+        if($("#scrim")) draw();
+      };
+      const ce=root.querySelector("#cleanIt");
+      if(ce) ce.onclick=async()=>{
+        cl="busy"; draw();
+        try{
+          const cur=byId(id)||it;
+          const r=await fetch(imgSrc(cur)); if(!r.ok) throw new Error("fetch");
+          const res=await cleanPhoto(await r.blob(),{person, category:d.category});
+          if(res.mode==="need-category"){ cl="needcat"; }
+          else if(!res.model){ cl="fail"; }
+          else{
+            const up=await assets.upload(res.blob);
+            const old=cur.assetId;
+            await updateItem(id,{assetId:up.id, onPerson:person});
+            if(old && old!==up.id){ try{ await assets.delete(old); }catch(e){} }
+            cl = res.cut ? "done" : "nocut";
+            toast(t("cleanedSaved"));
+          }
+        }catch(e){ cl="fail"; }
+        if($("#scrim")) draw();
+      };
+      root.querySelector("#delIt").onclick=e=>{
+        const b=e.currentTarget;
+        if(b.dataset.armed){ deleteItem(id).then(()=>{ closeSheet(); toast(t("deleted")); }).catch(()=>toast(t("delFail"))); }
+        else { b.dataset.armed="1"; b.textContent=inOutfits.length?t("delUsed")(inOutfits.length):t("tapDel"); }
+      };
+    });
+  };
+  draw();
+}
+
+/* ---------- logo / watermark remover ---------- */
+/* done(blob) with the edited photo, or done(null) when nothing changed or the person cancelled */
+function openLogoEditor(srcBlob, done){
+  let W=0,H=0, base=null, maskC=null, mctx=null, size=4, history=[], changed=false, status="", busy=false, garmentBoxes=[];
+  const finish=async save=>{
+    if(save && changed){ done(await toJpeg(base,0.92)); } else done(null);
+  };
+  const markBox=(b,pad=0.015)=>{
+    const x=Math.max(0,(b.x-pad)*W), y=Math.max(0,(b.y-pad)*H), w=Math.min(W-x,(b.w+2*pad)*W), h=Math.min(H-y,(b.h+2*pad)*H);
+    mctx.fillStyle="#f00"; mctx.fillRect(x,y,w,h);
+  };
+  const draw=()=>{
+    openSheet(`<div class="head"><h2>${t("logoTitle")}</h2><button class="xbtn" type="button" id="edClose" aria-label="${t("close")}">×</button></div>
+      <p class="note" style="max-width:60ch">${t("logoIntro")}</p>
+      <div class="edwrap"><canvas id="edBase"></canvas><canvas id="edMask"></canvas></div>
+      <div class="row" style="align-items:center">
+        <label class="brush">${t("brush")} <input type="range" id="edSize" min="1" max="12" step="0.5" value="${size}"></label>
+        ${sample&&canSeeImages?`<button class="chip" type="button" id="edAuto" ${busy?"disabled":""}>${t("autoFind")}</button>`:""}
+        ${garmentBoxes.length?`<button class="chip" type="button" id="edGarment">${t("garmentLogos")(garmentBoxes.length)}</button>`:""}
+        <button class="chip" type="button" id="edUndo" ${history.length?"":"disabled"}>${t("undo")}</button>
+        <button class="chip" type="button" id="edClear">${t("clearMarks")}</button>
+      </div>
+      ${status?`<div class="detect ${status.fail?"fail":""}" role="status">${status.busy?'<span class="spin" aria-hidden="true"></span>':""}${esc(status.text)}</div>`:""}
+      <div class="row" style="justify-content:space-between">
+        <button class="btn ghost" type="button" id="edCancel">${t("cancel")}</button>
+        <div class="row"><button class="btn" type="button" id="edApply" ${busy?"disabled":""}>${t("applyRemove")}</button>
+          <button class="btn primary" type="button" id="edSave" ${busy||!changed?"disabled":""}>${t("saveImg")}</button></div>
+      </div>`, root=>{
+      if(!base) return;
+      const bc=root.querySelector("#edBase"), mc=root.querySelector("#edMask");
+      bc.width=W; bc.height=H; bc.getContext("2d").drawImage(base,0,0);
+      mc.width=W; mc.height=H; const ov=mc.getContext("2d");
+      const paintOverlay=()=>{ ov.clearRect(0,0,W,H); ov.globalAlpha=0.45; ov.drawImage(maskC,0,0); ov.globalAlpha=1; };
+      paintOverlay();
+      let down=false, lx=0, ly=0;
+      const pos=e=>{ const r=mc.getBoundingClientRect(); return [(e.clientX-r.left)/r.width*W, (e.clientY-r.top)/r.height*H]; };
+      const stroke=(x,y)=>{ mctx.strokeStyle="#f00"; mctx.lineCap="round"; mctx.lineJoin="round"; mctx.lineWidth=size/100*Math.max(W,H);
+        mctx.beginPath(); mctx.moveTo(lx,ly); mctx.lineTo(x,y); mctx.stroke(); lx=x; ly=y; paintOverlay(); };
+      mc.addEventListener("pointerdown",e=>{ e.preventDefault(); mc.setPointerCapture(e.pointerId); down=true;
+        history.push(mctx.getImageData(0,0,W,H)); if(history.length>12) history.shift();
+        [lx,ly]=pos(e); stroke(lx+0.01,ly); root.querySelector("#edUndo").disabled=false; });
+      mc.addEventListener("pointermove",e=>{ if(down){ const [x,y]=pos(e); stroke(x,y); } });
+      const up=()=>{ down=false; }; mc.addEventListener("pointerup",up); mc.addEventListener("pointercancel",up);
+      root.querySelector("#edSize").oninput=e=>{ size=+e.target.value; };
+      root.querySelector("#edUndo").onclick=()=>{ const h=history.pop(); if(h){ mctx.putImageData(h,0,0); } draw(); };
+      root.querySelector("#edClear").onclick=()=>{ history.push(mctx.getImageData(0,0,W,H)); mctx.clearRect(0,0,W,H); draw(); };
+      root.querySelector("#edClose").onclick=()=>finish(false);
+      root.querySelector("#edCancel").onclick=()=>finish(false);
+      root.querySelector("#edSave").onclick=()=>finish(true);
+      root.querySelector("#edGarment")?.addEventListener("click",()=>{ history.push(mctx.getImageData(0,0,W,H)); garmentBoxes.forEach(b=>markBox(b,0.008)); garmentBoxes=[]; draw(); });
+      root.querySelector("#edApply").onclick=()=>{
+        const m=mctx.getImageData(0,0,W,H).data, n=W*H, region=new Uint8Array(n), known=new Uint8Array(n); let any=0;
+        for(let p=0;p<n;p++){ if(m[p*4+3]>20){ region[p]=1; any++; } else known[p]=1; }
+        if(!any){ status={text:t("markFirst"),fail:true}; draw(); return; }
+        const bx=ctx2d(base), id=bx.getImageData(0,0,W,H);
+        pushPullFill(id.data, known, W, H, region, 2);
+        bx.putImageData(id,0,0);
+        mctx.clearRect(0,0,W,H); history=[]; changed=true; status={text:t("removed")}; draw();
+      };
+      root.querySelector("#edAuto")?.addEventListener("click",async()=>{
+        busy=true; status={text:t("finding"),busy:true}; draw();
+        try{
+          const small=await shrink(await toJpeg(base,0.9),1024,0.85);
+          const a=await sample.json(`Find logos, watermarks, shop names, text overlays, stickers or price tags in this clothing photo.
+Reply with JSON only: {"overlays":[{"x":0,"y":0,"w":0,"h":0}], "garment":[{"x":0,"y":0,"w":0,"h":0}]}
+- "overlays": marks added on top of the photo or on the background (watermarks, shop logos, semi-transparent text, stickers, price tags).
+- "garment": brand logos or text printed, embroidered or sewn onto the clothing itself.
+x, y = top-left corner, w, h = size, all as fractions (0-1) of the image width and height. Make each box cover the whole mark. Use empty lists when there are none.`,{images:[small],modelTier:"default"});
+          const ok=b=>b && [b.x,b.y,b.w,b.h].every(v=>typeof v==="number" && v>=0 && v<=1) && b.w>0 && b.h>0 && b.w*b.h<0.35;
+          const ov=(a?.overlays||[]).filter(ok); garmentBoxes=(a?.garment||[]).filter(ok);
+          if(ov.length){ history.push(mctx.getImageData(0,0,W,H)); ov.forEach(b=>markBox(b)); }
+          const total=ov.length+garmentBoxes.length;
+          status = total ? {text:t("foundN")(total)} : {text:t("foundNone")};
+          if(!ov.length && garmentBoxes.length) status={text:t("foundN")(garmentBoxes.length)};
+        }catch(e){ status={text:t("findFail"),fail:true}; }
+        busy=false; draw();
+      });
+    }, {sticky:true});
+  };
+  (async()=>{
+    try{
+      const img=await loadImg(srcBlob);
+      const k=Math.min(1,1600/Math.max(img.naturalWidth,img.naturalHeight));
+      W=Math.max(1,Math.round(img.naturalWidth*k)); H=Math.max(1,Math.round(img.naturalHeight*k));
+      base=mkCanvas(W,H); const bx=ctx2d(base); bx.fillStyle="#fff"; bx.fillRect(0,0,W,H); bx.drawImage(img,0,0,W,H);
+      maskC=mkCanvas(W,H); mctx=maskC.getContext("2d",{willReadFrequently:true});
+      draw();
+    }catch(e){ done(null); }
+  })();
+}
+
+/* ---------- backup: export / import ---------- */
+const blobToDataUrl = b => new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=()=>rej(r.error); r.readAsDataURL(b); });
+function dataUrlToBlob(u){
+  const m=/^data:([^;,]+)?(;base64)?,(.*)$/s.exec(u||""); if(!m) throw new Error("bad image");
+  const bin=m[2]?atob(m[3]):decodeURIComponent(m[3]); const a=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) a[i]=bin.charCodeAt(i);
+  return new Blob([a],{type:m[1]||"image/jpeg"});
+}
+async function fetchImage(src){ const r=await fetch(src); if(!r.ok) throw new Error("image "+r.status); return blobToDataUrl(await r.blob()); }
+const ITEM_FIELDS=["name","nameZh","category","colors","season","notes","addedAt","wornCount","lastWorn","onPerson","demo"];
+const OUTFIT_FIELDS=["name","nameZh","itemIds","createdAt","wornCount","lastWorn","demo"];
+const pickFields=(o,f)=>{ const r={}; for(const k of f) if(o[k]!==undefined) r[k]=o[k]; return r; };
+
+function openBackup(){
+  let last=""; try{ last=localStorage.getItem("closet-last-backup")||""; }catch(e){}
+  let withDemo=false;
+  const draw=(msg,busy)=>{
+    const list=items.filter(i=>withDemo||!i.demo);
+    openSheet(`<div class="head"><h2>${t("backupTitle")}</h2><button class="x" type="button" aria-label="${t("close")}">×</button></div>
+      <p style="margin:0;max-width:60ch">${t("backupIntro")}</p>
+      ${items.some(i=>i.demo)?`<label class="toggle"><input type="checkbox" id="bkDemo" ${withDemo?"checked":""}> ${t("includeDemo")}</label>`:""}
+      <div class="row"><button class="btn primary" type="button" id="bkExport" ${busy||!list.length?"disabled":""}>${t("exportBtn")}</button>
+        <span class="note" style="align-self:center">${t("backupSize")(list.length, Math.max(1,Math.round(list.reduce((a,i)=>a+0.25*(1+extraPhotos(i).length),0))))}</span></div>
+      ${last?`<p class="note">${t("lastBackup")(new Date(last).toLocaleString(LANG==="zh"?"zh-CN":undefined,{dateStyle:"medium",timeStyle:"short"}))}</p>`:""}
+      <hr style="border:0;border-top:1px solid var(--line);margin:4px 0;width:100%">
+      <p class="note" style="max-width:60ch">${t("importIntro")}</p>
+      <div class="row"><button class="btn" type="button" id="bkImport" ${busy||!(assets||local)?"disabled":""}>${t("importBtn")}</button>
+        <input type="file" id="bkFile" accept=".json,application/json" hidden></div>
+      ${msg?`<div class="detect ${msg.fail?"fail":""}" role="status">${msg.busy?'<span class="spin" aria-hidden="true"></span>':""}${esc(msg.text)}</div>`:""}`, root=>{
+      root.querySelector("#bkDemo")?.addEventListener("change",e=>{ withDemo=e.target.checked; draw(); });
+      root.querySelector("#bkExport").onclick=()=>doExport();
+      root.querySelector("#bkImport").onclick=()=>root.querySelector("#bkFile").click();
+      root.querySelector("#bkFile").onchange=e=>{ const f=e.target.files&&e.target.files[0]; e.target.value=""; if(f) doImport(f); };
+    });
+  };
+  const doExport=async()=>{
+    if(!downloads){ draw({text:t("exportUnavailable"),fail:true}); return; }
+    const list=items.filter(i=>withDemo||!i.demo);
+    const ids=new Set(list.map(i=>i.id));
+    const total=list.reduce((a,i)=>a+1+extraPhotos(i).length,0); let done=0;
+    try{
+      const outItems=[];
+      for(const it of list){
+        draw({text:t("packing")(done,total),busy:true},true);
+        const rec={id:it.id, ...pickFields(it,ITEM_FIELDS), image:await fetchImage(imgSrc(it)), photos:[]}; done++;
+        for(const ph of extraPhotos(it)){ rec.photos.push({kind:ph.kind, image:await fetchImage(blobSrc(ph.id))}); done++; }
+        outItems.push(rec);
+      }
+      const outOutfits=outfits.filter(o=>o.itemIds.every(x=>ids.has(x))).map(o=>({id:o.id,...pickFields(o,OUTFIT_FIELDS)}));
+      const json=JSON.stringify({app:"my-closet",version:1,exportedAt:new Date().toISOString(),items:outItems,outfits:outOutfits});
+      await downloads.save({filename:`closet-backup-${today()}.json`, data:new Blob([json],{type:"application/json"})});
+      try{ last=new Date().toISOString(); localStorage.setItem("closet-last-backup",last); }catch(e){}
+      draw({text:t("exportDone")});
+    }catch(e){
+      const c=e?.code;
+      draw({text: c==="declined" ? t("exportDeclined") : (["unavailable","not_granted","capability_disabled","capability_removed"].includes(c) ? t("exportUnavailable") : t("exportFail")), fail:true});
+    }
+  };
+  const doImport=async file=>{
+    let data;
+    try{ data=JSON.parse(await file.text()); if(data?.app!=="my-closet" || !Array.isArray(data.items)) throw 0; }
+    catch(e){ draw({text:t("importBad"),fail:true}); return; }
+    const have=new Set(items.flatMap(i=>[i.id,i.srcId].filter(Boolean)));
+    let added=0, skipped=0, failed=0, n=0;
+    for(const rec of data.items){
+      n++; draw({text:t("importing")(n,data.items.length),busy:true},true);
+      if(!rec?.id || have.has(rec.id)){ skipped++; continue; }
+      try{
+        const fields=pickFields(rec,ITEM_FIELDS);
+        if(!CAT_IDS.includes(fields.category)) throw new Error("category");
+        const main=dataUrlToBlob(rec.image);
+        if(local){
+          const photos=(rec.photos||[]).map(ph=>({id:URL.createObjectURL(dataUrlToBlob(ph.image)),kind:ph.kind}));
+          items.push({id:rec.id,...fields,srcId:rec.id,localUrl:URL.createObjectURL(main),photos});
+        } else {
+          const up=await assets.upload(main);
+          const photos=[];
+          for(const ph of rec.photos||[]){ const u=await assets.upload(dataUrlToBlob(ph.image)); photos.push({id:u.id,kind:ph.kind==="back"?"back":(ph.kind==="front"?"front":"detail")}); }
+          await db.doc("items/"+rec.id).set({...fields,srcId:rec.id,assetId:up.id,photos});
+        }
+        have.add(rec.id); added++;
+      }catch(e){ failed++; }
+    }
+    let addedOutfits=0;
+    const haveOutfits=new Set(outfits.flatMap(o=>[o.id,o.srcId].filter(Boolean)));
+    for(const o of data.outfits||[]){
+      if(!o?.id || haveOutfits.has(o.id) || !Array.isArray(o.itemIds) || !o.itemIds.every(x=>have.has(x))) continue;
+      try{
+        const fields={...pickFields(o,OUTFIT_FIELDS),srcId:o.id};
+        if(local) outfits.push({id:o.id,...fields}); else await db.doc("outfits/"+o.id).set(fields);
+        addedOutfits++;
+      }catch(e){}
+    }
+    if(local) render();
+    draw({text: failed ? t("importFail")(failed) : t("importDone")(added,addedOutfits,skipped), fail:!!failed});
+  };
+  draw();
+}
+
+/* ---------- events ---------- */
+document.addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b) return;
+  if(b.dataset.tab){ S.tab=b.dataset.tab; rememberUi(); render(); }
+  else if(b.dataset.cat){ S.cat=b.dataset.cat; renderCloset(); }
+  else if(b.dataset.item){ if(SEL.on) toggleSel(b.dataset.item); else openItem(b.dataset.item); }
+  else if(b.dataset.osel) toggleSel(b.dataset.osel);
+  else if(b.dataset.style) styleAround(b.dataset.style);
+  else if(b.dataset.act==="add") $("#fileIn").click();
+  else if(b.dataset.goto){ S.tab=b.dataset.goto; render(); }
+  else if(b.dataset.step) step(b.dataset.step,+b.dataset.dir);
+  else if(b.dataset.flip){ S.mix.flip=S.mix.flip||{}; S.mix.flip[b.dataset.flip]=!S.mix.flip[b.dataset.flip]; renderMix(); }
+  else if(b.dataset.lock){ S.mix.locks[b.dataset.lock]=!S.mix.locks[b.dataset.lock]; renderMix(); }
+  else if(b.dataset.wear){ const o=outfits.find(x=>x.id===b.dataset.wear); markWorn(o).then(()=>toast(t("loggedWorn"))).catch(()=>toast(t("saveFailShort"))); }
+  else if(b.dataset.load){ const o=outfits.find(x=>x.id===b.dataset.load);
+    SLOTS.forEach(s=>{ S.mix.slots[s.id]=null; S.mix.locks[s.id]=false; });
+    o.itemIds.forEach(id=>{ const it=byId(id); if(!it) return; const s=ONE_PIECE.has(it.category)?"top":it.category; S.mix.slots[s]=id; S.mix.locks[s]=true; });
+    renderMix.started=true; S.today.answer=null; S.tab="mix"; render(); }
+  else if(b.dataset.delout){
+    if(b.dataset.armed) deleteOutfit(b.dataset.delout).then(()=>toast(t("outfitDeleted")));
+    else { b.dataset.armed="1"; b.textContent=t("tapAgain"); }
+  }
+});
+$("#langBtn").onclick=()=>{ LANG = LANG==="zh"?"en":"zh"; try{ localStorage.setItem("closet-lang",LANG); }catch(e){}
+  S.today.answer=null; applyLang(); render(); };
+$("#addBtn").onclick=()=>$("#fileIn").click();
+$("#backupBtn").onclick=()=>openBackup();
+$("#selDone").onclick=()=>{ endSelect(); render(); };
+$("#selAll").onclick=()=>{ const all=SEL.visible.every(id=>SEL.ids.has(id)); SEL.ids = all ? new Set() : new Set(SEL.visible); SEL.armed=false; render(); };
+$("#selDelete").onclick=()=>{ if(!SEL.ids.size||SEL.busy) return; if(!SEL.armed){ SEL.armed=true; renderSelBar(); return; } deleteSelected(); };
+$("#fileIn").onchange=e=>{ const f=e.target.files; if(f&&f.length) startAdd(f); e.target.value=""; };
+document.addEventListener("dragover",e=>e.preventDefault());
+document.addEventListener("drop",e=>{ e.preventDefault(); if(e.dataTransfer.files.length && (assets||local)) startAdd(e.dataTransfer.files); });
+$("#removeDemo").onclick=async e=>{
+  const b=e.currentTarget;
+  if(!b.dataset.armed){ b.dataset.armed="1"; b.textContent=t("tapAgainRemove"); return; }
+  b.disabled=true; b.textContent=t("removing");
+  try{
+    const demoIds=new Set(items.filter(i=>i.demo).map(i=>i.id));
+    for(const o of outfits.filter(o=>o.demo || o.itemIds.every(id=>demoIds.has(id)))) await deleteOutfit(o.id);
+    for(const id of demoIds) await deleteItem(id);
+    toast(t("demoRemoved"));
+  }catch(err){ toast(t("demoRemoveFail")); }
+  b.disabled=false; delete b.dataset.armed; b.textContent=t("removeDemo");
+};
+
+boot();
+</script>
+
+<script>
+if("serviceWorker" in navigator && location.protocol!=="file:"){
+  window.addEventListener("load",()=>{ navigator.serviceWorker.register("sw.js").catch(e=>console.warn("Offline mode unavailable:",e)); });
+}
+</script>
+</body>
+</html>
