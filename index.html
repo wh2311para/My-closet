@@ -62,6 +62,9 @@
 html,body{margin:0}
 body{-webkit-tap-highlight-color:transparent}
 img{max-width:100%}
+/* space kept clear above the phone's home bar. Inside the Claude app the page already ends above it,
+   so the bottom bar needs no extra room there; the home-screen app sets this to the real inset. */
+:root{--sab:env(safe-area-inset-bottom,0px)}
 [hidden]{display:none!important}
 body{background:var(--bg);color:var(--fg);font:15px/1.5 var(--f-body);
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
@@ -117,7 +120,7 @@ select.sel{border:1px solid var(--line);background:var(--surface);border-radius:
 .card .check{display:none} .grid.selecting .card .check{display:grid}
 button.ocard{text-align:left;position:relative;font:inherit;color:inherit;cursor:pointer}
 .selbar{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -4px 16px rgba(0,0,0,.08);
-  padding:12px max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+  padding:12px max(16px,env(safe-area-inset-right,0px)) calc(12px + var(--sab)) max(16px,env(safe-area-inset-left,0px))}
 .selbar .in{max-width:1100px;margin:0 auto;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
 .selbar b{font-weight:600}
 body.selecting{padding-bottom:96px}
@@ -175,7 +178,7 @@ body.selecting{padding-bottom:96px}
 .scrim{position:fixed;inset:0;background:rgba(10,12,18,.5);z-index:50;display:flex;align-items:flex-end;justify-content:center}
 @media (min-width:700px){.scrim{align-items:center}}
 .sheet{background:var(--surface);width:min(640px,100%);max-height:92vh;overflow:auto;border-radius:18px 18px 0 0;
-  padding:20px max(20px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px));display:grid;gap:16px}
+  padding:20px max(20px,env(safe-area-inset-right,0px)) calc(20px + var(--sab)) max(20px,env(safe-area-inset-left,0px));display:grid;gap:16px}
 @media (min-width:700px){.sheet{border-radius:18px}}
 .sheet h2{margin:0;font:700 22px var(--f-display)}
 .sheet .head{display:flex;justify-content:space-between;align-items:center;gap:12px}
@@ -204,7 +207,7 @@ body.selecting{padding-bottom:96px}
 .pv{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:12px;background:var(--sunk)}
 .queue-nav{display:flex;justify-content:space-between;align-items:center;gap:10px;font:500 12px var(--f-tag);color:var(--muted)}
 .stats{display:flex;gap:18px;font:500 12px var(--f-tag);color:var(--muted);letter-spacing:.04em}
-.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:600;z-index:60;font-size:14px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + var(--sab));background:var(--fg);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:600;z-index:60;font-size:14px}
 /* before you buy */
 .shop-hero{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px;display:grid;gap:12px}
 .shop-hero h2{margin:0;font:700 22px var(--f-display);text-wrap:balance}
@@ -362,22 +365,22 @@ nav.tabs .ts{display:none}
 .mixbar{display:none}
 @media (max-width:759px){
   :root{--navh:62px}
-  body{padding-bottom:calc(var(--navh) + 24px + env(safe-area-inset-bottom,0px))}
-  body.tab-mix{padding-bottom:calc(var(--navh) + 92px + env(safe-area-inset-bottom,0px))}
+  body{padding-bottom:calc(var(--navh) + 24px + var(--sab))}
+  body.tab-mix{padding-bottom:calc(var(--navh) + 92px + var(--sab))}
   header{padding-block:16px 10px;display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:10px;row-gap:2px;align-items:center}
   header .ttl{display:contents}
   header .sub{grid-column:1/-1;grid-row:2;font-size:11px;margin-top:2px}
   nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;margin:0;border-bottom:0;border-top:1px solid var(--line);
     background:color-mix(in srgb,var(--surface) 94%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
     display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;overflow:visible;
-    padding:6px max(6px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(6px,env(safe-area-inset-left,0px))}
+    padding:6px max(6px,env(safe-area-inset-right,0px)) calc(6px + var(--sab)) max(6px,env(safe-area-inset-left,0px))}
   nav.tabs button{flex-direction:column;justify-content:center;gap:3px;padding:5px 2px;margin:0;border:0;border-radius:10px;font:600 11px/1.1 var(--f-body);color:var(--muted);min-width:0}
   nav.tabs button[aria-selected="true"]{color:var(--accent)}
   nav.tabs .ti{width:23px;height:23px}
   nav.tabs .tl,nav.tabs .n{display:none}
   nav.tabs .ts{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
-  .toast{bottom:calc(var(--navh) + 16px + env(safe-area-inset-bottom,0px))}
-  body.tab-mix .toast{bottom:calc(var(--navh) + 78px + env(safe-area-inset-bottom,0px))}
+  .toast{bottom:calc(var(--navh) + 16px + var(--sab))}
+  body.tab-mix .toast{bottom:calc(var(--navh) + 78px + var(--sab))}
   .filters .search{flex-basis:40%}
   .filters .sel{flex:1 1 0;padding:8px 8px;font-size:13px}
   .filters #selStart{flex:none}
@@ -390,7 +393,7 @@ nav.tabs .ts{display:none}
   .palette.mini i{flex:1}
   .matchbar .mtext{flex:1;min-width:0;font-size:13px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
   .side .match,.deskonly{display:none!important}
-  .mixbar{display:block;position:fixed;left:0;right:0;bottom:calc(var(--navh) + env(safe-area-inset-bottom,0px));z-index:29;
+  .mixbar{display:block;position:fixed;left:0;right:0;bottom:calc(var(--navh) + var(--sab));z-index:29;
     background:color-mix(in srgb,var(--bg) 92%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-top:1px solid var(--line);
     padding:8px max(16px,env(safe-area-inset-right,0px)) 8px max(16px,env(safe-area-inset-left,0px))}
   .mixbar .in{display:grid;grid-template-columns:auto 1fr 1fr;gap:8px}
@@ -461,7 +464,10 @@ nav.tabs .ts{display:none}
 
 /* ---------- quiet motion ---------- */
 :root{--ease:cubic-bezier(.2,.8,.2,1)}
-section.enter{animation:viewin .22s var(--ease)}
+/* animate the view's contents, not the view itself: a moving parent would drag the fixed mix bar along with it */
+section.enter>*:not(.mixbar){animation:viewin .22s var(--ease)}
+section.enter>.mixbar{animation:barin .26s var(--ease)}
+@keyframes barin{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 @keyframes viewin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .scrim{animation:fadein .2s ease-out}
 .scrim .sheet{animation:sheetin .3s var(--ease)}
@@ -1205,7 +1211,7 @@ function cleanWorker(){
   if(CLEAN.ready) return CLEAN.ready;
   CLEAN.ready = new Promise((res,rej)=>{
     try{
-      const w=new Worker("worker.js?v=1.8.3");
+      const w=new Worker("worker.js?v=1.9.0");
       w.onmessage=e=>{
         const d=e.data;
         if(d.type==="ready") return res(w);

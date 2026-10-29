@@ -1,9 +1,16 @@
-衣橱 App 更新 1.8.3
+衣橱 App 更新 1.9.0
+
+这次要上传的文件比平时多：
+  index.html、sw.js、manifest.webmanifest，还有整个 icons 文件夹（5 个图标文件）。
 
 上传方法：打开 GitHub 仓库 My-closet → Add file → Upload files，
-把 index.html 和 sw.js 两个文件拖进去（会覆盖旧的）→ Commit changes。
-1–2 分钟后在手机上重新打开 App，就会自动更新。
+把 index.html、sw.js、manifest.webmanifest 和 icons 文件夹一起拖进去（会覆盖旧的）→ Commit changes。
 
 这次更新：
-- 颜色里的“图案”改名为“多色”（英文为 multicolor）。
-- 包含 1.8.2 的中英文备注切换。
+- 新的桌面图标：挂在衣架上的粉色小衣服。
+- 切换到搭配页时，底部按钮栏不再突然跳出来，而是轻轻淡入。
+
+注意：iPhone 桌面上的图标是添加到主屏幕那一刻定下来的，
+想换成新图标，需要删掉旧图标再重新添加。
+删除前一定先在 App 里「⋯ → 备份」导出备份！
+删除主屏幕 App 会一起删掉里面的衣服数据，重新添加后用「导入备份」恢复。
