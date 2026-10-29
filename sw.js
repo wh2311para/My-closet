@@ -1,10 +1,10 @@
 /* Offline support: the app shell is cached on install; model files are cached the first time they're used. */
-const SHELL = "closet-shell-1.0.0";
+const SHELL = "closet-shell-1.8.3";
 const MODELS = "closet-models-v1";
 const FILES = [
  "./",
  "index.html",
- "worker.js?v=1.0.0",
+ "worker.js?v=1.8.3",
  "manifest.webmanifest",
  "icons/icon.svg",
  "icons/icon-192.png",
@@ -34,12 +34,13 @@ self.addEventListener("fetch", e => {
   const req = e.request;
   if (req.method !== "GET" || new URL(req.url).origin !== location.origin) return;
   const isModel = req.url.includes("/model/");
+  const isFont = req.url.includes("/fonts/");
   e.respondWith((async () => {
     const hit = await caches.match(req, {ignoreSearch: req.mode === "navigate"});
     if (hit) return hit;
     try {
       const res = await fetch(req);
-      if (res.ok && (isModel || req.mode === "navigate")) {
+      if (res.ok && (isModel || isFont || req.mode === "navigate")) {
         const c = await caches.open(isModel ? MODELS : SHELL); c.put(req, res.clone());
       }
       return res;

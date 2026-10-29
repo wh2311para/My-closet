@@ -1,0 +1,9 @@
+衣橱 App 更新 1.8.3
+
+上传方法：打开 GitHub 仓库 My-closet → Add file → Upload files，
+把 index.html 和 sw.js 两个文件拖进去（会覆盖旧的）→ Commit changes。
+1–2 分钟后在手机上重新打开 App，就会自动更新。
+
+这次更新：
+- 颜色里的“图案”改名为“多色”（英文为 multicolor）。
+- 包含 1.8.2 的中英文备注切换。
